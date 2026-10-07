@@ -18,7 +18,7 @@ const Home = () => {
         <div className="relative space-y-3 max-w-xl">
           <p className="text-sm text-primary font-medium tracking-wide uppercase">Library Management System</p>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-            {user ? `Welcome back, ${user.name}` : "Welcome"}
+            {user ? `Welcome back, ${user.first_name}` : "Welcome"}
           </h1>
           <p className="text-muted-foreground text-base leading-relaxed">
             Manage your library catalog, track students, and explore user data — all in one place.

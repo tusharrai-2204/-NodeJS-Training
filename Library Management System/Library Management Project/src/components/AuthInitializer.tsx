@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { silentRefresh } from '@/store/authStore';
+import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,18 +9,21 @@ interface AuthInitializerProps {
 
 const AuthInitializer = ({ children }: AuthInitializerProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const lastVisitedPage = useUIStore((state) => state.lastVisitedPage);
   const navigate = useNavigate();
 
   useEffect(() => {
-    silentRefresh().then((success) => {
+    initializeAuth().then((success) => {
         if (success) {
-            navigate(lastVisitedPage, {replace: true});
+          const authPages = ['/login', '/register'];
+          const destination = authPages.includes(lastVisitedPage) ? '/' : lastVisitedPage;
+          navigate(destination, {replace: true});
         }
     }).finally(() => {
       setIsInitializing(false);
     });
-  }, [lastVisitedPage, navigate]);
+  }, []);
 
   if (isInitializing) {
     return (

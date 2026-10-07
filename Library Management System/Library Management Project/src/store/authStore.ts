@@ -1,39 +1,14 @@
 import type { AuthUser } from "@/lib/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-let accessToken: string | null = null;
-
-export const getAccessToken = () => accessToken;
-
-export const setAccessToken = (token: string | null) => {
-    accessToken = token;
-};
-
-// Simulates calling GET /auth/refresh and getting a new token back
-export const silentRefresh = (): Promise<boolean> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const { isAuthenticated } = useAuthStore.getState();
-
-      if (isAuthenticated) {
-        const newToken = `refreshed-token-${Date.now()}`;
-        setAccessToken(newToken);
-        console.log('Silent refresh succeeded — new token set in memory');
-        resolve(true);
-      } else {
-        console.log('Silent refresh failed — no persisted session');
-        resolve(false);
-      }
-    }, 500);
-  });
-};
+import { logoutUser, getMe } from "@/lib/api/auth";
 
 interface AuthState {
-  user: AuthUser | null,
-  isAuthenticated: boolean,
-  login: (user: AuthUser, token: string) => void,
-  logout: () => void
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  login: (user: AuthUser) => void;
+  logout: () => Promise<void>;
+  initializeAuth: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,22 +16,47 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
-      login: (user, token) => {
-        setAccessToken(token);
-        set({ user, isAuthenticated: true })
+
+      login: (user) => {
+        set({ user, isAuthenticated: true });
       },
-      logout: () => {
-        setAccessToken(null);
-        set({user: null, isAuthenticated: false})
-      }
+
+      logout: async () => {
+        try {
+          await logoutUser();
+        } catch (error) {
+          // do nothing if error occurs
+        }
+        set({ user: null, isAuthenticated: false });
+      },
+
+      initializeAuth: async () => {
+        try {
+          const response = await getMe();
+          const data = response.data;
+
+          set({
+            user: {
+              id: data.id,
+              email: data.email,
+              first_name: data.first_name,
+              last_name: data.last_name,
+            },
+            isAuthenticated: true,
+          });
+          return true;
+        } catch (error) {
+          set({ user: null, isAuthenticated: false });
+          return false;
+        }
+      },
     }),
     {
       name: "auth-store",
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated
+        isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
-

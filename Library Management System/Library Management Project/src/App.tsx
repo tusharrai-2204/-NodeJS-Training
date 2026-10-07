@@ -12,6 +12,7 @@ import PageTracker from "./components/PageTracker.tsx";
 import Home from "./components/Home.tsx";
 import LoginPage from "./components/LoginPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
+import RegisterPage from "./components/RegisterPage.tsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <PageTracker />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         <Route
           path="/*"
@@ -64,6 +66,7 @@ function App() {
                   path="/all-students"
                   element={<Navigate to="/students" replace />}
                 />
+                <Route path="/dashboard" element={<Navigate to="/" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>

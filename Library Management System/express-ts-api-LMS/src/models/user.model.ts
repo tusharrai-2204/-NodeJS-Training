@@ -4,8 +4,9 @@ export interface User {
   middle_name: string | null,
   last_name: string,
   email: string,
-  username: string,
-  password: string,
+  auth_provider: 'local' | 'google',
+  provider_user_id: string | null,
+  password: string | null, // can be null for google logged in user
   created_at: Date | null,
   modified_at: Date | null
 };

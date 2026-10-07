@@ -2,7 +2,7 @@ import { type loginForm, loginSchema, type AuthUser } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Form,
   FormControl,
@@ -14,6 +14,8 @@ import {
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
+import { getMe, loginUser } from "@/lib/api/auth";
+import axios from "axios";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -24,24 +26,32 @@ const LoginPage = () => {
     defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = (data: loginForm) => {
-    if (data.password !== "1234") {
-      form.setError("password", { message: "Invalid credentials" });
-      toast.error("Invalid credentials");
-      return;
-    }
-
-    const demoUser: AuthUser = {
-      id: 1,
-      name: data.email.split("@")[0],
-      email: data.email,
+  const onSubmit = async (data: loginForm) => {
+    try {
+      await loginUser(data);
+      const meResponse = await getMe();
+      // response.data contains { id, email } from backend
+      login({
+        id: meResponse.data.id,
+        email: meResponse.data.email,
+        first_name: meResponse.data.first_name,   
+        last_name: meResponse.data.last_name,    
+      });
+      toast.success("Logged in successfully");
+      navigate("/");
+    } catch (error: unknown) {
+      const message = 
+        axios.isAxiosError(error) 
+          ? error.response?.data?.message ?? "Login failed"
+          : "Login failed";
+      toast.error(message);
     };
+  };
 
-    const demoToken =
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30";
-    login(demoUser, demoToken);
-    toast.success("Logged in successfully");
-    navigate("/");
+  const handleGoogleLogin = () => {
+    // Redirect browser to backend Google OAuth initiation URL
+    // Backend handles the full OAuth flow and redirects back to /
+    window.location.href = "http://localhost:3000/api/auth/google";
   };
 
   return (
@@ -111,8 +121,32 @@ const LoginPage = () => {
             </form>
           </Form>
 
-          <p className="text-xs text-center text-muted-foreground">
-            Use any email · password: <span className="text-primary font-mono">1234</span>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGoogleLogin}
+          >
+            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
+              {/* Google SVG icon */}
+            </svg>
+            Continue with Google
+          </Button>
+
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            Don't have an account?{" "}
+            <Link to="/register" className="text-primary hover:underline">
+              Register
+            </Link>
           </p>
         </div>
       </div>

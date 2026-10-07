@@ -8,8 +8,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/login");
   };
 
@@ -25,9 +25,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary uppercase">
-                {user.name.charAt(0)}
+                {user.first_name?.charAt(0)}
               </div>
-              <span className="text-sm text-muted-foreground hidden sm:block">{user.name}</span>
+              <span className="text-sm text-muted-foreground hidden sm:block">{user.first_name} {user.last_name}</span>
             </div>
             <button
               type="button"

@@ -59,15 +59,25 @@ export type StudentsQueryParams = {
   order?: 'asc' | 'desc'
 }
 
-export const loginSchema = z.object({
-  email: z.email("Please enter a valid email"),
-  password: z.string().min(3, "Password must be atleast 3 characters")
+export const registerSchema = z.object({
+  first_name: z.string().min(1, "First name is required").max(50),
+  middle_name: z.string().max(50).optional(),
+  last_name: z.string().min(1, "Last name is required").max(50),
+  email: z.email("Please enter a valid email").max(100),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+export const loginSchema = z.object({
+  email: z.email("Please enter a valid email"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+export type registerForm = z.infer<typeof registerSchema>;
 export type loginForm = z.infer<typeof loginSchema>;
 
 export type AuthUser = {
   id: number,
-  name: string,
-  email: string
+  email: string,
+  first_name: string,
+  last_name: string
 };
