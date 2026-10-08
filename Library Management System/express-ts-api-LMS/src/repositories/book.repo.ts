@@ -116,3 +116,10 @@ export const deleteBook = async (id: number): Promise<boolean> => {
 
   return result.affectedRows > 0;
 };
+
+export const getAllBooks = async (): Promise<{ id: number; title: string; isbn: string }[]> => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, book_name AS title, isbn FROM books ORDER BY book_name ASC`
+  );
+  return rows as { id: number; title: string; isbn: string }[];
+};

@@ -84,3 +84,8 @@ export const removeBook = async (id: number) => {
     throw new AppError('Failed to delete book', 500);
   }
 }
+
+// get all books without pagination => needed for dropdown select at issues page
+export const getAllBooks = async () => {
+  return bookRepo.getAllBooks();
+}

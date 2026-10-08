@@ -67,3 +67,11 @@ export const deleteBook = async (req: Request, res: Response) => {
     message: 'Book deleted successfully'
   });
 }
+
+export const getAllBooks = async (_req: Request, res: Response) => {
+  const books = await bookService.getAllBooks();
+  res.status(200).json({
+    success: true,
+    data: books
+  });
+}
