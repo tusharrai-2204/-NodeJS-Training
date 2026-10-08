@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from "../validators/auth.validator.js";
+import type { LoginInput, RegisterInput } from "../schema/auth.schema.js";
 import * as userRepo from "../repositories/user.repo.js";
 import bcrypt from 'bcrypt';
 

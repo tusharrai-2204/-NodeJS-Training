@@ -1,5 +1,6 @@
 import express from 'express';
 import authRoutes from './routes/auth.route.js';
+import bookRoutes from './routes/book.route.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { requireAuth } from './middlewares/auth.middleware.js';
@@ -18,6 +19,7 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/books', bookRoutes);
 
 app.get("/", requireAuth, (_req, res) => {
     res.json({

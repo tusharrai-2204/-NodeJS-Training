@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type {
   LoginInput,
   RegisterInput,
-} from "../validators/auth.validator.js";
+} from "../schema/auth.schema.js";
 import * as authService from "../services/auth.service.js";
 import { signToken } from "../utils/jwt.util.js";
 import passport from "passport";

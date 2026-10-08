@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { validate } from "../middlewares/validator.middleware.js";
-import { loginSchema, registerSchema } from "../validators/auth.validator.js";
+import { validate } from "../middlewares/schema.middleware.js";
+import { loginSchema, registerSchema } from "../schema/auth.schema.js";
 import { getMe, googleAuth, googleCallback, login, logout, register } from "../controllers/auth.controller.js";
 import passport from "passport";
 import { requireAuth } from "../middlewares/auth.middleware.js";
