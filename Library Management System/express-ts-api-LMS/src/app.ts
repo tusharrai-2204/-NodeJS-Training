@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import { requireAuth } from './middlewares/auth.middleware.js';
 import passport from 'passport';
 import './config/passport.js';
+import { errorHandler } from './middlewares/error.middleware.js';
 
 
 const app = express();
@@ -26,5 +27,7 @@ app.get("/", requireAuth, (_req, res) => {
         message: "Library Management System API running"
     });
 });
+
+app.use(errorHandler);
 
 export default app;

@@ -50,7 +50,7 @@ const BookList = () => {
   const page = Number(searchParams.get("page") ?? "1");
   const pageSize = Number(searchParams.get("pageSize") ?? "10");
   const search = searchParams.get("search") ?? "";
-  const sort = searchParams.get("sort");
+  const sortBy = searchParams.get("sortBy");
   const order = (searchParams.get("order") ?? "asc") as "asc" | "desc";
 
   const [searchInput, setSearchInput] = useState(search);
@@ -73,7 +73,28 @@ const BookList = () => {
       ),
     }),
     columnHelper.accessor("author", {
-      header: "Author Name",
+      header: ({ column }) => (
+        <Button onClick={() => column.toggleSorting()}>
+          Author{" "}
+          {column.getIsSorted() === "asc"
+            ? "↑"
+            : column.getIsSorted() === "desc"
+              ? "↓"
+              : "↕"}
+        </Button>
+      ),
+    }),
+    columnHelper.accessor("isbn", {
+      header: ({ column }) => (
+        <Button onClick={() => column.toggleSorting()}>
+          ISBN{" "}
+          {column.getIsSorted() === "asc"
+            ? "↑"
+            : column.getIsSorted() === "desc"
+              ? "↓"
+              : "↕"}
+        </Button>
+      ),
     }),
     columnHelper.display({
       id: "Actions",
@@ -153,7 +174,7 @@ const BookList = () => {
     data: result,
     isLoading,
     error,
-  } = useBooksQuery({ page, pageSize, search, sort, order });
+  } = useBooksQuery({ page, pageSize, search, sortBy, order });
 
   // console.table(result);
 
@@ -166,7 +187,7 @@ const BookList = () => {
     manualSorting: true,
     state: {
       pagination: { pageIndex: page - 1, pageSize },
-      sorting: sort ? [{ id: sort, desc: order === "desc" }] : [],
+      sorting: sortBy ? [{ id: sortBy, desc: order === "desc" }] : [],
     },
     onPaginationChange: (updater) => {
       const next =
@@ -181,16 +202,16 @@ const BookList = () => {
     onSortingChange: (updater) => {
       const next =
         typeof updater === "function"
-          ? updater(sort ? [{ id: sort, desc: order === "desc" }] : [])
+          ? updater(sortBy ? [{ id: sortBy, desc: order === "desc" }] : [])
           : updater;
       if (next.length > 0) {
         updateParams({
-          sort: next[0].id,
+          sortBy: next[0].id,
           order: next[0].desc ? "desc" : "asc",
           page: "1",
         });
       } else {
-        updateParams({ sort: "", order: "asc", page: "1" });
+        updateParams({ sortBy: "", order: "asc", page: "1" });
       }
     },
   });
@@ -200,7 +221,7 @@ const BookList = () => {
   const deleteMutation = useDeleteBook();
 
   const handleDelete = (id: number) => {
-    console.log(`Delete Book with ID: ${id}`);
+    // console.log(`Delete Book with ID: ${id}`);
     deleteMutation.mutate(id);
   };
 

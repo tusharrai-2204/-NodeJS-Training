@@ -1,4 +1,4 @@
-import { type loginForm, loginSchema, type AuthUser } from "@/lib/types";
+import { type loginForm, loginSchema } from "@/lib/types";
 import { useAuthStore } from "@/store/authStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";

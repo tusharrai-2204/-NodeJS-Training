@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { bookSchema, type Book } from "../lib/types";
+import { editBookSchema, type Book, type EditBook } from "../lib/types";
 import {
   Dialog,
   DialogContent,
@@ -26,12 +26,12 @@ interface EditBookDialogProps {
 }
 
 const EditBookDialog = ({ book }: EditBookDialogProps) => {
-  const form = useForm<Book>({
-    resolver: zodResolver(bookSchema),
+  const form = useForm<EditBook>({
+    resolver: zodResolver(editBookSchema),
     defaultValues: {
-      id: book.id,
       title: book.title,
       author: book.author,
+      isbn: book.isbn
     },
   });
 
@@ -40,17 +40,17 @@ const EditBookDialog = ({ book }: EditBookDialogProps) => {
   useEffect(() => {
     if (open) {
       form.reset({
-        id: book.id,
         title: book.title,
         author: book.author,
+        isbn: book.isbn
       });
     }
   }, [open, book, form]);
 
   const updateBookMutation = useUpdateBook();
 
-  const onSubmit = (data: Book) => {
-    updateBookMutation.mutate(data, {
+  const onSubmit = (data: EditBook) => {
+    updateBookMutation.mutate({ ...data, id: book.id}, {
       onSuccess: () => setOpen(false),
     });
   };
@@ -91,6 +91,20 @@ const EditBookDialog = ({ book }: EditBookDialogProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Book Author: </FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="isbn"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ISBN: </FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>

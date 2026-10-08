@@ -9,7 +9,10 @@ export const validate = (schema: ZodType) => {
     if (!result.success) {
       return res.status(400).json({
         success: false,
-        errors: result.error.flatten().fieldErrors,
+        errors: result.error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+        })),
       });
     }
 
@@ -26,11 +29,14 @@ export const validateQuery = (schema: ZodType) => {
     if (!result.success) {
       return res.status(400).json({
         success: false,
-        errors: result.error.flatten().fieldErrors,
+        errors: result.error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+        }))
       });
     }
 
-    req.query = result.data as Record<string, string>;
+    res.locals.query = result.data;
     next();
   };
 };

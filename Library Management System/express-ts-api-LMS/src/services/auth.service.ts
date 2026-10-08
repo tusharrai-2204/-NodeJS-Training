@@ -1,6 +1,7 @@
 import type { LoginInput, RegisterInput } from "../schema/auth.schema.js";
 import * as userRepo from "../repositories/user.repo.js";
 import bcrypt from 'bcrypt';
+import { BadRequestError, ConflictError, UnauthorizedError } from "../utils/AppError.js";
 
 interface GoogleAuthInput {
     googleId: string, 
@@ -14,7 +15,7 @@ export const registerUser = async (registerInput: RegisterInput) => {
     // checking if user with email already exists
     const existingUser = await userRepo.findUserByEmail(registerInput.email);
     if(existingUser) {
-        throw new Error('User with this email already exists'); 
+        throw new ConflictError('User with this email already exists'); 
     }
 
 
@@ -38,20 +39,20 @@ export const loginUser = async (loginInput: LoginInput) => {
     const user = await userRepo.findUserByEmail(loginInput.email);
 
     if (!user) {
-        throw new Error("Invalid credentials");
+        throw new UnauthorizedError("Invalid credentials");
     }
 
     if (user.auth_provider === 'google') {
-        throw new Error('This account uses Google Login. Please login in with Google.')
+        throw new BadRequestError('This account uses Google Login. Please login in with Google.')
     }
 
     if (!user.password) {
-        throw new Error('Invalid credentials')
+        throw new UnauthorizedError('Invalid credentials')
     }
 
     const isPasswordValid = await bcrypt.compare(loginInput.password, user.password);
     if (!isPasswordValid) {
-        throw new Error("Invalid credentials");
+        throw new UnauthorizedError("Invalid credentials");
     }
 
     const { password, ...croppedUser } = user;
@@ -63,7 +64,7 @@ export const googleAuthUser = async (input: GoogleAuthInput) => {
 
     if (existingUser) {
         if (existingUser.auth_provider === 'local') {
-            throw new Error('This email is already registed. Please log in with your password');
+            throw new ConflictError('This email is already registed. Please log in with your password');
         }
 
         return existingUser;

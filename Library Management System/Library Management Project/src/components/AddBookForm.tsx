@@ -20,6 +20,7 @@ const AddBookForm = () => {
     defaultValues: {
       title: "",
       author: "",
+      isbn: "",
     }
   });
 
@@ -69,6 +70,20 @@ const AddBookForm = () => {
                   <FormLabel>Book Author</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter author name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name='isbn'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ISBN</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. 9780261102354" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

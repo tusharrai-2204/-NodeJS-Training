@@ -1,5 +1,6 @@
 import type { BookQuerySchema, CreateBookSchema, UpdateBookSchema } from "../schema/book.schema.js";
 import * as bookRepo from '../repositories/book.repo.js';
+import { AppError, ConflictError, NotFoundError } from "../utils/AppError.js";
 
 // Books Listing
 export const listBooks = async (query: BookQuerySchema) => {
@@ -27,7 +28,7 @@ export const getBook = async (id: number) => {
   const book = await bookRepo.findBookById(id);
 
   if (!book) {
-    throw new Error('Book Not Found');
+    throw new NotFoundError('Book Not Found');
   }
 
   return book;
@@ -37,7 +38,7 @@ export const getBook = async (id: number) => {
 export const addBook = async (input: CreateBookSchema) => {
   const existingBook = await bookRepo.findBookByIsbn(input.isbn);
   if (existingBook) {
-    throw new Error('A Book already exists with this ISBN');
+    throw new ConflictError('A Book already exists with this ISBN');
   }
 
   const bookId = await bookRepo.createBook({
@@ -54,7 +55,7 @@ export const editBook = async (id: number, input: UpdateBookSchema) => {
   const existingBook = await bookRepo.findBookById(id);
 
   if (!existingBook) {
-    throw new Error('Book not found');
+    throw new NotFoundError('Book not found');
   }
 
   const bookUpdated = await bookRepo.updateBook(id, {
@@ -64,7 +65,7 @@ export const editBook = async (id: number, input: UpdateBookSchema) => {
   });
 
   if (!bookUpdated) {
-    throw new Error('Something went wrong!');
+    throw new AppError('Failed to update book', 500);
   }
 
   return await bookRepo.findBookById(id);
@@ -74,12 +75,12 @@ export const editBook = async (id: number, input: UpdateBookSchema) => {
 export const removeBook = async (id: number) => {
   const existingBook = await bookRepo.findBookById(id);
   if (!existingBook) {
-    throw new Error('Book not found');
+    throw new NotFoundError('Book not found');
   }
   
   const bookDeleted = await bookRepo.deleteBook(id);
 
   if (!bookDeleted) {
-    throw new Error('Something went wrong');
+    throw new AppError('Failed to delete book', 500);
   }
 }

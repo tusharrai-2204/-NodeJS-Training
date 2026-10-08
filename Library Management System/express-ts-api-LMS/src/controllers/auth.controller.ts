@@ -7,6 +7,7 @@ import * as authService from "../services/auth.service.js";
 import { signToken } from "../utils/jwt.util.js";
 import passport from "passport";
 import * as useRepo from "../repositories/user.repo.js";
+import { NotFoundError } from "../utils/AppError.js";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -16,48 +17,31 @@ const COOKIE_OPTIONS = {
 };
 
 export const register = async (req: Request, res: Response) => {
-  try {
-    const input = req.body as RegisterInput;
-    const user = await authService.registerUser(input);
+  const input = req.body as RegisterInput;
+  const user = await authService.registerUser(input);
 
-    const token = signToken({ userId: user.id, email: user.email });
+  const token = signToken({ userId: user.id, email: user.email });
 
-    res.cookie("token", token, COOKIE_OPTIONS);
-    res.status(201).json({
-      success: true,
-      message: "Registered successfully",
-      data: { ...user },
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Registration failed";
-    res.status(400).json({
-      success: false,
-      message,
-    });
-  }
+  res.cookie("token", token, COOKIE_OPTIONS);
+  res.status(201).json({
+    success: true,
+    message: "Registered successfully",
+    data: { ...user },
+  });
 };
 
 export const login = async (req: Request, res: Response) => {
-  try {
-    const input = req.body as LoginInput;
-    const user = await authService.loginUser(input);
+  const input = req.body as LoginInput;
+  const user = await authService.loginUser(input);
 
-    const token = signToken({ userId: user.id, email: user.email });
-    res.cookie("token", token, COOKIE_OPTIONS);
+  const token = signToken({ userId: user.id, email: user.email });
+  res.cookie("token", token, COOKIE_OPTIONS);
 
-    res.status(200).json({
-      success: true,
-      message: "Login successfull",
-      data: { id: user.id, email: user.email },
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Login failed";
-    res.status(401).json({
-      success: false,
-      message,
-    });
-  }
+  res.status(200).json({
+    success: true,
+    message: "Login successfull",
+    data: { id: user.id, email: user.email },
+  });
 };
 
 export const logout = (_req: Request, res: Response) => {
@@ -86,18 +70,13 @@ export const googleCallback = (req: Request, res: Response) => {
 };
 
 export const getMe = async (req: Request, res: Response) => {
-  try {
-    // req.user has { userId, email } from the JWT
-    const user = await useRepo.findUserById(req.user!.userId);
+  // req.user has { userId, email } from the JWT
+  const user = await useRepo.findUserById(req.user!.userId);
 
-    if (!user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
-    }
-
-    const { password, ...safeUser } = user;
-    res.status(200).json({ success: true, data: safeUser });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Failed to fetch user" });
+  if (!user) {
+    throw new NotFoundError('User Not Found');
   }
+
+  const { password, ...safeUser } = user;
+  res.status(200).json({ success: true, data: safeUser });
 };
