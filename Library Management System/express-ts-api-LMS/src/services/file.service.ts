@@ -7,9 +7,8 @@ export const uploadFile = async (file: Express.Multer.File) => {
   const originalNameWithoutExt = file.originalname.replace(/\.[^/.]+$/, "");
   // Sanitize: replace spaces and special chars with underscores
   const sanitized = originalNameWithoutExt.replace(/[^a-zA-Z0-9_-]/g, "_");
-  const date = new Date();
-  const formatted = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
-  const customPublicId = `${sanitized}_${formatted}`;
+  const timestamp = Date.now();
+  const customPublicId = `${sanitized}_${timestamp}`;
 
   // upload to cloudinary
   const result = await new Promise<{ public_id: string; secure_url: string }>(

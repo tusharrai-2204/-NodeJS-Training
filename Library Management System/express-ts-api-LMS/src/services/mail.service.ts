@@ -1,4 +1,3 @@
-import { string } from "zod";
 import type { BookResponse } from "../models/book.model.js";
 import transporter from "../config/mailer.js";
 
@@ -13,7 +12,7 @@ export const sendBookCreationMail = async (input: {
     const ext = book.file_url.split(".").pop()?.split("?")[0] ?? "jpg";
     attachments.push({
       filename: `${book.title}.${ext}`,
-      path: book.file_url, // Nodemailer fetches the URL and attaches it
+      path: book.file_url, 
     });
   }
 
