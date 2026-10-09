@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import type { BookQuerySchema, CreateBookSchema, UpdateBookSchema } from "../schema/book.schema.js";
 import * as bookService from "../services/book.service.js";
 import { BadRequestError } from "../utils/AppError.js";
+import { sendBookCreationMail } from "../services/mail.service.js";
 
 export const getBooks = async (_req: Request, res: Response) => {
   const query = res.locals.query as unknown as BookQuerySchema;
@@ -37,6 +38,13 @@ export const createBook = async (req: Request, res: Response) => {
     success: true,
     data: book
   });
+
+  if (book && req.user?.email) {
+    sendBookCreationMail({ to: req.user.email, book })
+    .catch((error) => {
+      console.log("Failed to send Book creation mail ", error);
+    });
+  }
 };
 
 export const updateBook = async (req: Request, res: Response) => {
