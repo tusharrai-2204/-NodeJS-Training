@@ -9,12 +9,13 @@ import type {
 } from "../models/book.model.js";
 
 // Map DB response with API response
-const toBookResponse = (book: Book): BookResponse => {
+const toBookResponse = (book: Book & { file_url?: string | null }): BookResponse => {
   return {
     id: book.id,
     title: book.book_name,
     author: book.author_name,
     isbn: book.isbn,
+    file_url: book.file_url ?? null,
     created_at: book.created_at,
     modified_at: book.modified_at,
   };
@@ -44,9 +45,11 @@ export const getBooks = async (
   const total = (countRows[0] as { total: number }).total;
 
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `select * from books
-    where book_name like ? or author_name like ? or isbn like ?
-    order by ${sortColumn} ${sortOrder}
+    `select b.*, f.url as file_url
+    from books b
+    left join files f on b.file_id = f.id
+    where b.book_name like ? or b.author_name like ? or b.isbn like ?
+    order by b.${sortColumn} ${sortOrder}
     limit ? offset ?`,
     [searchTerm, searchTerm, searchTerm, params.pageSize, offset],
   );
@@ -61,7 +64,10 @@ export const findBookById = async (
   id: number,
 ): Promise<BookResponse | null> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `select * from books where id = ?`,
+    `select b.*, f.url as file_url
+    from books b
+    left join files f on b.file_id = f.id 
+    where b.id = ?`,
     [id],
   );
 
@@ -76,7 +82,10 @@ export const findBookByIsbn = async (
   isbn: string,
 ): Promise<BookResponse | null> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `select * from books where isbn = ?`,
+    `select b.*, f.url as file_url
+    from books b
+    left join files f on b.file_id = f.id 
+    where b.isbn = ?`,
     [isbn],
   );
 
@@ -89,8 +98,8 @@ export const findBookByIsbn = async (
 
 export const createBook = async (data: CreateBookInput): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
-    `insert into books (book_name, author_name, isbn, created_at, modified_at) 
-    values (?, ?, ?, NOW(), NOW())`, [data.book_name, data.author_name, data.isbn]
+    `insert into books (book_name, author_name, isbn, file_id, created_at, modified_at) 
+    values (?, ?, ?, ?, NOW(), NOW())`, [data.book_name, data.author_name, data.isbn, data.file_id ?? null]
   );
 
   return result.insertId;
@@ -102,8 +111,9 @@ export const updateBook = async (id: number, data: UpdateBookInput): Promise<boo
     book_name = coalesce(?, book_name),
     author_name = coalesce(?, author_name),
     isbn = coalesce(?, isbn),
+    file_id = case when ? is not null then ? else file_id end,
     modified_at = NOW()
-    where id = ?`, [data.book_name ?? null, data.author_name ?? null, data.isbn ?? null, id]
+    where id = ?`, [data.book_name ?? null, data.author_name ?? null, data.isbn ?? null, data?.file_id ?? null, data?.file_id ?? null, id]
   );
 
   return result.affectedRows > 0;
@@ -122,4 +132,12 @@ export const getAllBooks = async (): Promise<{ id: number; title: string; isbn: 
     `SELECT id, book_name AS title, isbn FROM books ORDER BY book_name ASC`
   );
   return rows as { id: number; title: string; isbn: string }[];
+};
+
+export const findBookFileId = async (id: number): Promise<number | null> => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    'SELECT file_id FROM books WHERE id = ?', [id]
+  );
+  if (rows.length === 0) return null;
+  return (rows[0] as { file_id: number | null }).file_id;
 };

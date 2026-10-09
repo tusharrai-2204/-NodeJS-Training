@@ -36,8 +36,9 @@ export const updateBook = async (book: EditBook & { id: number}) => {
   const response = await apiInstance.patch(`/api/books/${book.id}`, {
     title: book.title,
     author: book.author,
-    isbn: book.isbn
-  })
+    isbn: book.isbn,
+    file_id: book.file_id ?? undefined
+  });
   return response.data.data as Book;
 }
 

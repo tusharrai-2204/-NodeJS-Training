@@ -20,6 +20,7 @@ export const createBookSchema = z.object({
     .min(2, "Author name must be atleast 2 characters")
     .max(100, "Author name cannot have more than 100 characters"),
   isbn: isbnSchema,
+  file_id: z.number().int().positive().optional().nullable()
 });
 
 export const updateBookSchema = z
@@ -35,6 +36,7 @@ export const updateBookSchema = z
       .max(100, "Author name cannot have more than 100 characters")
       .optional(),
     isbn: isbnSchema.optional(),
+    file_id: z.number().int().positive().optional().nullable()
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Atleast one field must be provided for update.",

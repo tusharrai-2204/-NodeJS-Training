@@ -35,6 +35,7 @@ import { useSearchParams } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import useDebounce from "@/hooks/useDebounce";
 import { Input } from "../ui/input";
+import { toast } from "sonner";
 
 const features = tableFeatures({
   rowPaginationFeature,
@@ -57,6 +58,51 @@ const BookList = () => {
   const debouncedSearch = useDebounce(searchInput, 400);
 
   const columns = columnHelper.columns([
+    columnHelper.display({
+      id: "cover",
+      header: "Cover",
+      cell: ({ row }) => {
+        const url = row.original.file_url;
+        const title = row.original.title;
+
+        if (!url) return null;
+
+        const handleDownload = async () => {
+          try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+
+            // Derive extension from mimetype
+            const ext = blob.type.split("/")[1] ?? "jpg";
+
+            // Create a temporary anchor and trigger download
+            const blobUrl = URL.createObjectURL(blob);
+            const anchor = document.createElement("a");
+            anchor.href = blobUrl;
+            anchor.download = `${title}.${ext}`;
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+
+            // Clean up the blob URL after download triggers
+            URL.revokeObjectURL(blobUrl);
+          } catch {
+            toast.error("Failed to download image");
+          }
+        };
+
+        return (
+          <img
+            src={url}
+            alt={title}
+            title="Click to download"
+            onClick={handleDownload}
+            className="w-10 h-14 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
+          />
+        );
+      },
+    }),
+
     columnHelper.accessor("id", {
       header: "Book ID",
     }),
@@ -122,7 +168,7 @@ const BookList = () => {
                     Cancel
                   </AlertDialogCancel>
                   <Button
-                  type="button"
+                    type="button"
                     className="border border-zinc-50 bg-transparent text-zinc-50 hover:bg-zinc-800"
                     onClick={() => handleDelete(book.id)}
                   >
@@ -180,7 +226,7 @@ const BookList = () => {
     features,
     columns,
     data: result?.data ?? [],
-    rowCount: result?.total ?? 0, 
+    rowCount: result?.total ?? 0,
     manualPagination: true,
     manualSorting: true,
     state: {
@@ -233,7 +279,6 @@ const BookList = () => {
 
   return (
     <div className="space-y-6">
-
       <div className="flex items-center gap-3 flex-wrap">
         <Input
           type="text"
@@ -258,9 +303,15 @@ const BookList = () => {
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="border-border bg-secondary/50 hover:bg-secondary/50">
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-border bg-secondary/50 hover:bg-secondary/50"
+                >
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-muted-foreground font-medium">
+                    <TableHead
+                      key={header.id}
+                      className="text-muted-foreground font-medium"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -286,13 +337,19 @@ const BookList = () => {
                 ))
               ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow className="border-border">
-                  <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-12">
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center text-muted-foreground py-12"
+                  >
                     No books found
                   </TableCell>
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="border-border hover:bg-secondary/30 transition-colors">
+                  <TableRow
+                    key={row.id}
+                    className="border-border hover:bg-secondary/30 transition-colors"
+                  >
                     {row.getAllCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -314,7 +371,9 @@ const BookList = () => {
           <span className="text-xs text-muted-foreground">Rows per page</span>
           <select
             value={pageSize}
-            onChange={(e) => updateParams({ pageSize: e.target.value, page: "1" })}
+            onChange={(e) =>
+              updateParams({ pageSize: e.target.value, page: "1" })
+            }
             className="text-xs bg-secondary border border-border rounded-md px-2 py-1 text-foreground"
           >
             <option value="10">10</option>
@@ -335,7 +394,9 @@ const BookList = () => {
           </Button>
           <span className="text-xs text-muted-foreground px-2">
             Page <span className="text-foreground font-medium">{page}</span> of{" "}
-            <span className="text-foreground font-medium">{table.getPageCount()}</span>
+            <span className="text-foreground font-medium">
+              {table.getPageCount()}
+            </span>
           </span>
           <Button
             variant="outline"

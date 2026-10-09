@@ -1,5 +1,6 @@
 import type { BookQuerySchema, CreateBookSchema, UpdateBookSchema } from "../schema/book.schema.js";
 import * as bookRepo from '../repositories/book.repo.js';
+import * as fileService from '../services/file.service.js';
 import { AppError, ConflictError, NotFoundError } from "../utils/AppError.js";
 
 // Books Listing
@@ -44,7 +45,8 @@ export const addBook = async (input: CreateBookSchema) => {
   const bookId = await bookRepo.createBook({
     isbn: input.isbn,
     book_name: input.title,
-    author_name: input.author
+    author_name: input.author,
+    file_id: input.file_id ?? null,
   });
 
   return await bookRepo.findBookById(bookId);
@@ -58,10 +60,19 @@ export const editBook = async (id: number, input: UpdateBookSchema) => {
     throw new NotFoundError('Book not found');
   }
 
+  // checking if a new file_id is provided => delete the corresponding previous file
+  if (input.file_id !== undefined && input.file_id !== null) {
+    const oldFileId = await bookRepo.findBookFileId(id);
+    if (oldFileId && oldFileId !== input.file_id) {
+      await fileService.deleteFileById(oldFileId);
+    }
+  }
+
   const bookUpdated = await bookRepo.updateBook(id, {
     book_name: input.title,
     author_name: input.author,
-    isbn: input.isbn
+    isbn: input.isbn,
+    file_id: input.file_id
   });
 
   if (!bookUpdated) {
@@ -77,11 +88,17 @@ export const removeBook = async (id: number) => {
   if (!existingBook) {
     throw new NotFoundError('Book not found');
   }
+
+  const fileId = await bookRepo.findBookFileId(id);
   
   const bookDeleted = await bookRepo.deleteBook(id);
 
   if (!bookDeleted) {
     throw new AppError('Failed to delete book', 500);
+  }
+
+  if (fileId) {
+    await fileService.deleteFileById(fileId);
   }
 }
 

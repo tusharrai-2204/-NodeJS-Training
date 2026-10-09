@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/express-ts-api-LMS/node_modules/.bin/tsx",
+      "runtimeArgs": ["--inspect"],
+      "args": ["src/server.ts"],
+      "cwd": "${workspaceFolder}/express-ts-api-LMS",
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Frontend",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/Library Management Project",
+      "sourceMapPathOverrides": {
+        "/src/*": "${workspaceFolder}/Library Management Project/src/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack",
+      "configurations": ["Debug Backend", "Debug Frontend"]
+    }
+  ]
+}

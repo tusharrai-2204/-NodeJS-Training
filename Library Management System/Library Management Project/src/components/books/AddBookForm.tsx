@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -11,9 +11,39 @@ import {
 } from '../ui/dialog';
 import { addBookSchema, type AddBook } from '@/lib/types';
 import { useAddBook } from '@/hooks/useBooks';
+import { toast } from 'sonner';
+import { uploadFile } from '@/lib/api/files';
 
 const AddBookForm = () => {
   const [open, setOpen] = useState(false);
+  const [fileId, setFileId] = useState<number | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2*1024*1024) {
+      toast.error('File size cannot be more than 2 MB');
+      e.target.value = "";
+      return;
+    }
+
+    setPreviewUrl(URL.createObjectURL(file));
+    setUploading(true);
+
+    try {
+      const result = await uploadFile(file);
+      setFileId(result.id);
+      toast.success('Image uploaded successfully!');
+    } catch (error) {
+      toast.error("Failed to upload image");
+      setPreviewUrl(null);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const form = useForm<AddBook>({
     resolver: zodResolver(addBookSchema),
@@ -26,10 +56,18 @@ const AddBookForm = () => {
 
   const addBookMutation = useAddBook();
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setFileId(null);
+      setPreviewUrl(null);
+    }
+  };
+
   const onSubmit = (book: AddBook) => {
-    addBookMutation.mutate(book, {
+    addBookMutation.mutate({ ...book, file_id: fileId ?? undefined }, {
         onSuccess: () => {
-          setOpen(false);
+          handleOpenChange(false);
           form.reset();
         }
       })
@@ -90,11 +128,44 @@ const AddBookForm = () => {
               )}
             />
 
+            {/* File upload field */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Book Cover <span className="text-muted-foreground font-normal">(optional)</span>
+              </label>
+              <Input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                JPEG or PNG, max 2MB
+              </p>
+              {uploading && (
+                <p className="text-xs text-muted-foreground">Uploading...</p>
+              )}
+              {previewUrl && !uploading && (
+                <div className="mt-2">
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-20 h-28 object-cover rounded border border-border"
+                  />
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 pt-2">
-              <Button type='submit' variant="outline" disabled={addBookMutation.isPending}>
+              <Button type='submit' variant="outline" disabled={addBookMutation.isPending || uploading}>
                 {addBookMutation.isPending ? "Adding..." : "Add Book"}
               </Button>
-              <Button type='button' variant="outline" onClick={() => form.reset()}>
+              <Button type='button' variant="outline" onClick={() => {
+                form.reset();
+                setFileId(null);
+                setPreviewUrl(null);
+              }}>
                 Reset
               </Button>
             </div>

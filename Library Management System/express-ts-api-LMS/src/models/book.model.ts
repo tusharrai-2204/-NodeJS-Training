@@ -3,6 +3,7 @@ export interface Book {
   book_name: string,
   author_name: string,
   isbn: string,
+  file_id: number | null,
   created_at: Date,
   modified_at: Date
 };
@@ -12,6 +13,7 @@ export interface BookResponse {
   title: string,
   author: string,
   isbn: string,
+  file_url: string | null,
   created_at: Date,
   modified_at: Date
 };

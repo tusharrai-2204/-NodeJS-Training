@@ -12,6 +12,7 @@ export const bookSchema = z.object({
     .min(2, "Author name must be at least 2 characters")
     .max(100, "Author name cannot be more than 100 characters"),
   isbn: z.string().min(10).max(13),
+  file_url: z.url().optional().nullable(),
   created_at: z.string(),
   modified_at: z.string(),
 });
@@ -35,6 +36,7 @@ export const addBookSchema = z.object({
       "ISBN must be 10 or 13 digits",
     )
     .refine((val) => /^[0-9X]+$/i.test(val), "ISBN must contain only digits"),
+  file_id: z.number().int().positive().optional().nullable()
 });
 
 export type AddBook = z.infer<typeof addBookSchema>;
@@ -46,6 +48,7 @@ export const editBookSchema = z.object({
     .min(2, "Author name must be at least 2 characters")
     .max(100),
   isbn: z.string().min(10).max(13),
+  file_id: z.number().int().positive().optional().nullable()
 });
 
 export type EditBook = z.infer<typeof editBookSchema>;
