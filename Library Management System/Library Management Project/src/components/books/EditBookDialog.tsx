@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { editBookSchema, type Book, type EditBook } from "../lib/types";
+import { editBookSchema, type Book, type EditBook } from "../../lib/types"; 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
-import { Button } from "./ui/button";
+} from "../ui/dialog";
+import { Button } from "../ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,15 +17,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
+} from "../ui/form";
+import { Input } from "../ui/input";
 import { useUpdateBook } from "@/hooks/useBooks";
 
-interface EditBookDialogProps {
-  book: Book;
-}
 
-const EditBookDialog = ({ book }: EditBookDialogProps) => {
+const EditBookDialog = ({ book }: { book: Book }) => {
   const form = useForm<EditBook>({
     resolver: zodResolver(editBookSchema),
     defaultValues: {

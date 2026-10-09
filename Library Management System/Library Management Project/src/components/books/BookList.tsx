@@ -17,8 +17,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "./ui/alert-dialog";
-import { Button } from "./ui/button";
+} from "../ui/alert-dialog";
+import { Button } from "../ui/button";
 import type { Book } from "@/lib/types";
 import { useBooksQuery, useDeleteBook } from "@/hooks/useBooks";
 import {
@@ -32,9 +32,9 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { useSearchParams } from "react-router-dom";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import useDebounce from "@/hooks/useDebounce";
-import { Input } from "./ui/input";
+import { Input } from "../ui/input";
 
 const features = tableFeatures({
   rowPaginationFeature,
@@ -176,13 +176,11 @@ const BookList = () => {
     error,
   } = useBooksQuery({ page, pageSize, search, sortBy, order });
 
-  // console.table(result);
-
   const table = useTable({
     features,
     columns,
     data: result?.data ?? [],
-    rowCount: result?.total ?? 0, // total records for pagination
+    rowCount: result?.total ?? 0, 
     manualPagination: true,
     manualSorting: true,
     state: {

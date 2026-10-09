@@ -4,7 +4,7 @@ import { useAuthStore } from "@/store/authStore";
 const stats = [
   { label: "Books", description: "Browse and manage the full catalog", icon: "📖", to: "/books" },
   { label: "Students", description: "View enrolled student records", icon: "🎓", to: "/students" },
-  { label: "Users", description: "Explore user profiles and posts", icon: "👤", to: "/users" },
+  { label: "Books Issued", description: "Explore books issued to students", icon: "📋", to: "/issues" },
 ];
 
 const Home = () => {

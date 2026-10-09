@@ -5,10 +5,10 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Button } from './ui/button';
+import { Button } from '../ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from './ui/dialog';
+} from '../ui/dialog';
 import { addBookSchema, type AddBook } from '@/lib/types';
 import { useAddBook } from '@/hooks/useBooks';
 

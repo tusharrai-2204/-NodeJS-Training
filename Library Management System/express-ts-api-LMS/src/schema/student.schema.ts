@@ -19,20 +19,8 @@ export const createStudentSchema = z.object({
   city: z.string().min(1, "City is required").max(100),
 });
 
-export const updateStudentSchema = z
-  .object({
-    student_name: z.string().min(2).max(100).optional(),
-    roll_no: z.string().min(1).max(50).optional(),
-    phone: z
-      .string()
-      .min(7)
-      .max(15)
-      .regex(/^\+?[0-9\s\-()]+$/, "Invalid phone number format")
-      .optional(),
-    country: z.string().min(1).max(100).optional(),
-    state: z.string().min(1).max(100).optional(),
-    city: z.string().min(1).max(100).optional(),
-  })
+export const updateStudentSchema = createStudentSchema
+  .partial()
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided for update",
   });

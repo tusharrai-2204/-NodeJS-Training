@@ -22,6 +22,10 @@ export const getBooks = async ({page, pageSize, search, sortBy, order }: BooksQu
   };
 };
 
+export const getAllBooks = async (): Promise<{ id: number; title: string; isbn: string }[]> => {
+  const response = await apiInstance.get("/api/books/all");
+  return response.data.data;
+};
 
 export const addBook = async (book: AddBook) => {
   const response = await apiInstance.post('/api/books', book);

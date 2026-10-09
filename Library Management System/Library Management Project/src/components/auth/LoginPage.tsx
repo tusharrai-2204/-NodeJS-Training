@@ -10,9 +10,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "./ui/form";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { getMe, loginUser } from "@/lib/api/auth";
 import axios from "axios";
@@ -29,8 +29,7 @@ const LoginPage = () => {
   const onSubmit = async (data: loginForm) => {
     try {
       await loginUser(data);
-      const meResponse = await getMe();
-      // response.data contains { id, email } from backend
+      const meResponse = await getMe(); // get complete details of the logged in user 
       login({
         id: meResponse.data.id,
         email: meResponse.data.email,
@@ -50,7 +49,7 @@ const LoginPage = () => {
 
   const handleGoogleLogin = () => {
     // Redirect browser to backend Google OAuth initiation URL
-    // Backend handles the full OAuth flow and redirects back to /
+    // Backend handles the full OAuth flow and redirects back to '/dashboard' equivalent to '/' 
     window.location.href = "http://localhost:3000/api/auth/google";
   };
 

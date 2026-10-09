@@ -24,7 +24,7 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         try {
           await logoutUser();
-        } catch (error) {
+        } catch {
           // do nothing if error occurs
         }
         set({ user: null, isAuthenticated: false });
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
           });
           return true;
-        } catch (error) {
+        } catch {
           set({ user: null, isAuthenticated: false });
           return false;
         }

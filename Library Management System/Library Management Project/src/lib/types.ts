@@ -1,5 +1,6 @@
 import z from "zod";
 
+// -------------------- Books related types and schemas --------------------------
 export const bookSchema = z.object({
   id: z.number().positive("Book ID must be a positive number"),
   title: z
@@ -57,45 +58,83 @@ export type BooksQueryParams = {
   order?: "asc" | "desc";
 };
 
-// --------------------------------------------------------------------------------------------------------------------------------------
+// -------------  Student related types and schemas    ---------------------------------
 
-export const studentSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  age: z.number(),
+export type Student = {
+  id: number;
+  student_name: string;
+  roll_no: string;
+  phone: string;
+  country: string;
+  state: string;
+  city: string;
+  created_at: Date;
+  modified_at: Date;
+};
+
+export type StudentDropDownItem = {
+  id: number;
+  student_name: string;
+};
+
+export const addStudentSchema = z.object({
+  student_name: z
+    .string()
+    .min(2, "Student name must be at least 2 characters")
+    .max(100, "Student name cannot exceed 100 characters"),
+  roll_no: z
+    .string()
+    .min(1, "Roll number is required")
+    .max(50, "Roll number cannot exceed 50 characters"),
+  phone: z
+    .string()
+    .min(7, "Phone number must be at least 7 digits")
+    .max(15, "Phone number cannot exceed 15 digits")
+    .regex(/^\+?[0-9\s\-()]+$/, "Invalid phone number"),
+  country: z.string().min(1, "Country is required").max(100),
+  state: z.string().min(1, "State is required").max(100),
+  city: z.string().min(1, "City is required").max(100),
 });
 
-export type Student = z.infer<typeof studentSchema>;
+export type AddStudent = z.infer<typeof addStudentSchema>;
 
-export const userSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  email: z.email(),
-  address: z.object({
-    city: z.string(),
-  }),
-});
+export const editStudentSchema = addStudentSchema
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided for update",
+  });
 
-export type User = z.infer<typeof userSchema>;
-
-export const postSchema = z.object({
-  userId: z.number(),
-  id: z.number(),
-  title: z.string(),
-  body: z.string(),
-});
-
-export type Post = z.infer<typeof postSchema>;
+export type EditStudent = z.infer<typeof editStudentSchema>;
 
 export type StudentsQueryParams = {
   page: number;
   pageSize: number;
   search: string;
-  sort?: string | null;
-  order?: "asc" | "desc";
+  sortBy?: string | null;
+  order?: 'asc' | 'desc';
 };
 
-// ---------------------------------------------------------------------------------------------------------------------
+// ----------- book issue related types and schemas  ---------------
+
+export type Issue = {
+  id: number;
+  book_id: number;
+  book_title: string;
+  student_id: number;
+  student_name: string;
+  issued_at: string;
+  return_date: string | null;
+  status: 'issued' | 'returned';
+};
+
+export type IssueQueryParams = {
+  page: number;
+  pageSize: number;
+  bookId?: number | null;
+  studentId?: number | null;
+};
+
+// -----------------  auth related types and schemas ---------------------------
 
 export const registerSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50),

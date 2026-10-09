@@ -8,7 +8,7 @@ const navItems = [
   { to: "/", label: "Home", icon: "⊞" },
   { to: "/books", label: "Books", icon: "📖" },
   { to: "/students", label: "Students", icon: "🎓" },
-  { to: "/users", label: "Users", icon: "👤" },
+  { to: "/issues", label: "Books Issued", icon: "📋" },
 ];
 
 const Navbar = ({ collapsed = false }: NavbarProps) => {

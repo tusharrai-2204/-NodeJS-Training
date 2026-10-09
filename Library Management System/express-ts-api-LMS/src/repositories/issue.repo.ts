@@ -34,7 +34,7 @@ export const getIssues = async (params: IssueQueryParams): Promise<{ issues: Iss
         join books b on i.book_id = b.id 
         join students s on i.student_id = s.id 
         ${whereClause}
-        order by i.issued_at desc 
+        order by i.issued_at asc 
         limit ? offset ?`,
         [...values, params.pageSize, offset] as ExecuteValues[]
     );

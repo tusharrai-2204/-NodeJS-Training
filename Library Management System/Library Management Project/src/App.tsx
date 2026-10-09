@@ -1,18 +1,18 @@
 import "./index.css";
-import BookList from "./components/BookList.tsx";
-import StudentDetails from "./components/StudentDetails.tsx";
+import BookList from "./components/books/BookList.tsx";
 import { Navigate, Route, Routes } from "react-router-dom";
 import NotFound from "./components/NotFound.tsx";
-import StudentPage from "./pages/StudentPage.tsx";
-import AddBookForm from "./components/AddBookForm.tsx";
-import Users from "./components/Users.tsx";
-import UserPosts from "./components/UserPosts.tsx";
+import AddBookForm from "./components/books/AddBookForm.tsx";
 import Layout from "./components/Layout.tsx";
 import PageTracker from "./components/PageTracker.tsx";
 import Home from "./components/Home.tsx";
-import LoginPage from "./components/LoginPage.tsx";
+import LoginPage from "./components/auth/LoginPage.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import RegisterPage from "./components/RegisterPage.tsx";
+import RegisterPage from "./components/auth/RegisterPage.tsx";
+import StudentList from "./components/students/StudentList.tsx";
+import StudentAddPage from "./components/students/StudentAddPage.tsx";
+import IssueListPage from "./components/issues/IssueListPage.tsx";
+import IssueBookPage from "./components/issues/IssueBookPage.tsx";
 
 function App() {
   return (
@@ -27,12 +27,7 @@ function App() {
           element={
             <Layout>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Home />
-                  }
-                />
+                <Route path="/" element={<Home />} />
                 <Route
                   path="/books"
                   element={
@@ -40,8 +35,12 @@ function App() {
                       <div className="space-y-0">
                         <div className="flex items-center justify-between mb-6">
                           <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Books</h1>
-                            <p className="text-sm text-muted-foreground mt-1">Manage your library catalog</p>
+                            <h1 className="text-2xl font-bold tracking-tight">
+                              Books
+                            </h1>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Manage your library catalog
+                            </p>
                           </div>
                           <AddBookForm />
                         </div>
@@ -54,19 +53,42 @@ function App() {
                   path="/students"
                   element={
                     <ProtectedRoute>
-                      <StudentPage />
+                      <StudentList />
                     </ProtectedRoute>
                   }
-                >
-                  <Route path=":id" element={<StudentDetails />} />
-                </Route>
-                <Route path="/users" element={<Users />} />
-                <Route path="/users/:id" element={<UserPosts />} />
+                />
+                <Route
+                  path="/students/add"
+                  element={
+                    <ProtectedRoute>
+                      <StudentAddPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/issues"
+                  element={
+                    <ProtectedRoute>
+                      <IssueListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/issues/new"
+                  element={
+                    <ProtectedRoute>
+                      <IssueBookPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/all-students"
                   element={<Navigate to="/students" replace />}
                 />
-                <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                <Route
+                  path="/dashboard"
+                  element={<Navigate to="/" replace />}
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
