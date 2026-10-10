@@ -34,6 +34,7 @@ const RegisterPage = () => {
         email: meResponse.data.email,
         first_name: meResponse.data.first_name,
         last_name: meResponse.data.last_name,
+        role: meResponse.data.role
       });
       toast.success("Registration successful");
       navigate("/");

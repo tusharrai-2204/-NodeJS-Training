@@ -35,6 +35,7 @@ const LoginPage = () => {
         email: meResponse.data.email,
         first_name: meResponse.data.first_name,   
         last_name: meResponse.data.last_name,    
+        role: meResponse.data.role
       });
       toast.success("Logged in successfully");
       navigate("/");

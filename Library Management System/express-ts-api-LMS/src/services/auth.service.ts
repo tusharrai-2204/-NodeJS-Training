@@ -28,7 +28,8 @@ export const registerUser = async (registerInput: RegisterInput) => {
         email: registerInput.email,
         auth_provider: 'local',
         provider_user_id: null,
-        password: hashedPassword
+        password: hashedPassword,
+        role: 'user'
     });
 
     return { id: userId, email: registerInput.email }; 
@@ -77,7 +78,8 @@ export const googleAuthUser = async (input: GoogleAuthInput) => {
         email: input.email,
         auth_provider: 'google',
         provider_user_id: input.googleId,
-        password: null
+        password: null,
+        role: 'user'
     });
 
     const newUser = await userRepo.findUserById(userId);

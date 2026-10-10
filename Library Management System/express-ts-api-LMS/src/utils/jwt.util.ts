@@ -1,17 +1,26 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? 'KotgWXNplfOnIuJGRv2AdObqDaU28gsO9vJSHmmTZj4';
-const JWT_EXPIRES_IN = '1d';
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 
-export interface JwtPayload {
+export interface AccessTokenPayload {
     userId: number,
-    email: string
+    email: string,
+    role: 'admin' | 'user'
 };
 
-export const signToken = (payload: JwtPayload): string => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+export const signAccessToken = (payload: AccessTokenPayload): string => {
+    return jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
 };
 
-export const verifyToken = (token: string): JwtPayload => {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+export const verifyAccessToken = (token: string): AccessTokenPayload => {
+    return jwt.verify(token, ACCESS_SECRET) as AccessTokenPayload;
+};
+
+export const generateRefreshToken = (): string => {
+    return crypto.randomBytes(64).toString('hex');
+};
+
+export const hashRefreshToken = (token: string): string => {
+    return crypto.createHash('sha256').update(token).digest('hex');
 };

@@ -13,8 +13,12 @@ import StudentList from "./components/students/StudentList.tsx";
 import StudentAddPage from "./components/students/StudentAddPage.tsx";
 import IssueListPage from "./components/issues/IssueListPage.tsx";
 import IssueBookPage from "./components/issues/IssueBookPage.tsx";
+import { useAuthStore } from "./store/authStore.ts";
 
 function App() {
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "admin";
+
   return (
     <>
       <PageTracker />
@@ -42,7 +46,7 @@ function App() {
                               Manage your library catalog
                             </p>
                           </div>
-                          <AddBookForm />
+                          {isAdmin && <AddBookForm />}
                         </div>
                         <BookList />
                       </div>

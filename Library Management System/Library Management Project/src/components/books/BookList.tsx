@@ -36,6 +36,7 @@ import { Skeleton } from "../ui/skeleton";
 import useDebounce from "@/hooks/useDebounce";
 import { Input } from "../ui/input";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/authStore";
 
 const features = tableFeatures({
   rowPaginationFeature,
@@ -46,6 +47,9 @@ const features = tableFeatures({
 const columnHelper = createColumnHelper<typeof features, Book>();
 
 const BookList = () => {
+  const user = useAuthStore((state) => state.user);
+  const isAdmin = user?.role === "admin";
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = Number(searchParams.get("page") ?? "1");
@@ -148,9 +152,9 @@ const BookList = () => {
       cell: ({ row }) => {
         const book = row.original;
         return (
-          <>
-            <EditBookDialog book={book} />
-            <AlertDialog>
+          <div className="flex gap-2">
+            {isAdmin && <EditBookDialog book={book} />}
+            {isAdmin && (<AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button type="button" variant="destructive">
                   Delete
@@ -176,8 +180,9 @@ const BookList = () => {
                   </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
-            </AlertDialog>
-          </>
+            </AlertDialog>)}
+            {!isAdmin && <span className="text-xs text-muted-foreground">-</span>}
+          </div>
         );
       },
     }),

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../middlewares/schema.middleware.js";
 import { loginSchema, registerSchema } from "../schema/auth.schema.js";
-import { getMe, googleAuth, googleCallback, login, logout, register } from "../controllers/auth.controller.js";
+import { getMe, googleAuth, googleCallback, login, logout, refreshTokenHandler, register } from "../controllers/auth.controller.js";
 import passport from "passport";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -11,6 +11,7 @@ router.post('/register', validate(registerSchema), register);
 router.post('/login', validate(loginSchema), login);
 router.post('/logout', logout);
 router.get('/me', requireAuth, getMe);
+router.post('/refresh', refreshTokenHandler);
 
 router.get('/google', googleAuth);
 router.get('/google/callback', 
