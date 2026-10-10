@@ -1,0 +1,43 @@
+OWASP Security best principles followed in Library Management System Project:-
+
+Application Security:-
+
+-> Input validation with Zod on all endpoints — covers the "Perform input validation" principle
+
+-> Parameterized queries via mysql2 pool.execute() everywhere — SQL injection is prevented
+
+-> Only returning necessary fields — /getMe API strips password, loginUser uses destructuring to exclude it
+
+-> Role-based access control — requireRole middleware implements ACL (Access Control List) principle
+
+-> Async/await throughout — flat promise chains, no callback hell
+
+-> Followed the principle "Take precautions against brute-forcing" and implemented rate-limiter for login attempts and API requests using express-rate-limit
+
+-> Followed the principle "Set request size limits" and set size limit of 10kb for request body.
+
+
+Error & Exception Handling:-
+
+-> Global error handler — errorHandler middleware catches all errors
+
+-> Custom error classes — AppError, NotFoundError, ConflictError, UnAuthorized etc. prevent leaking stack traces to clients
+
+-> No stack traces in responses — unknown errors return 'Something went wrong!'
+
+-> Handled uncaughtException and unhandledrejection using process EventEmitter object.
+
+Server Security:
+
+-> httpOnly cookies — access and refresh tokens set with httpOnly: true
+
+-> sameSite: lax on cookies — partial CSRF protection
+
+-> CORS configured with explicit origin (http://localhost:5173) — not wildcard
+
+-> Used helmet package to set several HTTP security headers that can help prevent some common attack vectors.
+
+
+Platform Security:-
+
+-> TypeScript strict mode — "strict": true in tsconfig.json

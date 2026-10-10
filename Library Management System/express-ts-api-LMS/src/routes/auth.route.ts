@@ -4,11 +4,13 @@ import { loginSchema, registerSchema } from "../schema/auth.schema.js";
 import { getMe, googleAuth, googleCallback, login, logout, refreshTokenHandler, register } from "../controllers/auth.controller.js";
 import passport from "passport";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { authRateLimiter } from "../middlewares/rateLimit.middleware.js";
 
 const router = Router();
 
-router.post('/register', validate(registerSchema), register);
-router.post('/login', validate(loginSchema), login);
+router.post('/register', authRateLimiter, validate(registerSchema), register);
+router.post('/login', authRateLimiter, validate(loginSchema), login);
+
 router.post('/logout', logout);
 router.get('/me', requireAuth, getMe);
 router.post('/refresh', refreshTokenHandler);

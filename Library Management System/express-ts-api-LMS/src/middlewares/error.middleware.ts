@@ -1,7 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/AppError.js";
 import multer from "multer";
-import { success } from "zod";
 
 export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
