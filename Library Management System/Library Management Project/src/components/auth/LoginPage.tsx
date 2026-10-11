@@ -51,7 +51,7 @@ const LoginPage = () => {
   const handleGoogleLogin = () => {
     // Redirect browser to backend Google OAuth initiation URL
     // Backend handles the full OAuth flow and redirects back to '/dashboard' equivalent to '/' 
-    window.location.href = "http://localhost:3000/api/auth/google";
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'}/api/auth/google`;
   };
 
   return (

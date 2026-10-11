@@ -7,7 +7,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: "http://localhost:3000/api/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:3000/api/auth/google/callback',
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
@@ -17,7 +17,7 @@ passport.use(
           first_name: profile.name?.givenName ?? "",
           last_name: profile.name?.familyName ?? "",
         });
-        done(null, { userId: user.id, email: user.email });
+        done(null, { userId: user.id, email: user.email, role: user.role });
       } catch (error) {
         done(error as Error, undefined);
       }

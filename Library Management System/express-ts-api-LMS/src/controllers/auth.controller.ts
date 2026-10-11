@@ -10,19 +10,23 @@ import { NotFoundError } from "../utils/AppError.js";
 import * as refreshTokenRepo from "../repositories/refreshToken.repo.js";
 import * as userRepo from '../repositories/user.repo.js';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: false,
+  secure: isProduction,
   sameSite: "lax" as const,
   maxAge: 15 * 60 * 1000, // 15 minutes
 };
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: false,
+  secure: isProduction,
   sameSite: "lax" as const,
   maxAge: 24 * 7 * 60 * 60 * 1000, // 7 days
 };
+
+const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
 
 // Helper method to issue refresh + access token and set cookies
 const issueTokens = async (res: Response, user: { id: number; email: string; role: 'admin' | 'user' }) => {
@@ -130,19 +134,19 @@ export const googleAuth = passport.authenticate("google", {
 
 export const googleCallback = async (req: Request, res: Response) => {
   if (!req.user) {
-    res.redirect("http://localhost:5173/login?error=google_auth_failed");
+    res.redirect(`${FRONTEND_URL}/login?error=google_auth_failed`);
     return;
   }
 
   const user = await userRepo.findUserById(req.user.userId);
   if (!user) {
-    res.redirect("http://localhost:5173/login?error=user_not_found");
+    res.redirect(`${FRONTEND_URL}/login?error=user_not_found`);
     return;
   }
 
   await issueTokens(res, { id: user.id, email: user.email, role: user.role });
 
-  res.redirect("http://localhost:5173/dashboard");
+  res.redirect(`${FRONTEND_URL}/dashboard`);
 };
 
 export const getMe = async (req: Request, res: Response) => {

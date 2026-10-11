@@ -2,7 +2,7 @@ import axios from 'axios';
 import { refreshTokens } from './api/auth';
 
 export const apiInstance = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000',
   withCredentials: true,
 });
 
