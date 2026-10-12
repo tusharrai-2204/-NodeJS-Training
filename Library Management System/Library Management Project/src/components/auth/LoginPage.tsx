@@ -133,12 +133,10 @@ const LoginPage = () => {
           <Button
             type="button"
             variant="outline"
-            className="w-full"
+            className="w-full "
+            size="padding"
             onClick={handleGoogleLogin}
           >
-            <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-              {/* Google SVG icon */}
-            </svg>
             Continue with Google
           </Button>
 

@@ -79,11 +79,10 @@ export const findStudentByRollNo = async (
 // create Student
 export const createStudent = async (data: CreateStudentInput): Promise<number> => {
   const [result] = await pool.execute<ResultSetHeader>(
-    `insert into students (student_name, roll_no, phone, country, state, city, created_at, modified_at) 
-    values (?, ?, ?, ?, ?, ?, NOW(), NOW())`, 
-    [data.student_name, data.roll_no, data.phone, data.country, data.state, data.city]
+    `insert into students (student_name, roll_no, phone, country, state, city, profile_image_url, created_at, modified_at) 
+    values (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`, 
+    [data.student_name, data.roll_no, data.phone, data.country, data.state, data.city, data.profile_image_url ?? null]
   );
-
   return result.insertId;
 };
 
@@ -96,9 +95,10 @@ export const updateStudent = async (id: number, data: UpdateStudentInput): Promi
     country = coalesce(?, country),
     state = coalesce(?, state),
     city = coalesce(?, city),
+    profile_image_url = CASE WHEN ? IS NOT NULL THEN ? ELSE profile_image_url END,
     modified_at = NOW()
     where id = ?`, 
-    [data.student_name ?? null, data.roll_no ?? null, data.phone ?? null, data.country ?? null, data.state ?? null, data.city ?? null, id]
+    [data.student_name ?? null, data.roll_no ?? null, data.phone ?? null, data.country ?? null, data.state ?? null, data.city ?? null, data.profile_image_url ?? null, data.profile_image_url ?? null, id]
   );
 
   return result.affectedRows > 0;
@@ -111,3 +111,13 @@ export const deleteStudent = async (id: number): Promise<boolean> => {
 
   return result.affectedRows > 0;
 };
+
+export const exportAllStudents = async (): Promise<Student[]> => {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `select id, student_name, roll_no, phone, country, state, city, created_at
+    from students
+    order by student_name asc`
+  );
+
+  return rows as Student[];
+}

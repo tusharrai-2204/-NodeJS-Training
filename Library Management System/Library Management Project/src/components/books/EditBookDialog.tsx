@@ -22,6 +22,7 @@ import { Input } from "../ui/input";
 import { useUpdateBook } from "@/hooks/useBooks";
 import { toast } from "sonner";
 import { uploadFile } from "@/lib/api/files";
+import axios from "axios";
 
 const EditBookDialog = ({ book }: { book: Book }) => {
   const [open, setOpen] = useState(false);
@@ -67,8 +68,11 @@ const EditBookDialog = ({ book }: { book: Book }) => {
       const result = await uploadFile(file);
       setFileId(result.id);
       toast.success("Image uploaded successfully!");
-    } catch {
-      toast.error("Failed to upload image");
+    } catch (error: unknown) {
+      const message = axios.isAxiosError(error)
+        ? (error.response?.data?.message ?? "Failed to upload image")
+        : "Failed to upload image";
+      toast.error(message);
       setPreviewUrl(book.file_url ?? null);
     } finally {
       setUploading(false);

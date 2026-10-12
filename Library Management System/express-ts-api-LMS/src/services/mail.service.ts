@@ -12,7 +12,7 @@ export const sendBookCreationMail = async (input: {
     const ext = book.file_url.split(".").pop()?.split("?")[0] ?? "jpg";
     attachments.push({
       filename: `${book.title}.${ext}`,
-      path: book.file_url, 
+      path: book.file_url,
     });
   }
 
@@ -96,4 +96,91 @@ const buildBookCreatedHtml = (book: BookResponse): string => {
     </body>
     </html>
   `;
+};
+
+export const sendStudentExportEmail = async (
+  to: string,
+  format: string,
+  fileBuffer: Buffer,
+  totalRecords: number,
+): Promise<void> => {
+  const formatLabels: Record<string, string> = {
+    csv: "CSV",
+    excel: "Excel (.xlsx)",
+    pdf: "PDF",
+  };
+
+  const fileExtensions: Record<string, string> = {
+    csv: "csv",
+    excel: "xlsx",
+    pdf: "pdf",
+  };
+
+  const mimeTypes: Record<string, string> = {
+    csv: "text/csv",
+    excel: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    pdf: "application/pdf",
+  };
+
+  const filename = `students_export_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head><meta charset="UTF-8" /></head>
+    <body style="margin:0; padding:0; background-color:#f4f4f5; font-family: Arial, sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5; padding: 40px 0;">
+        <tr><td align="center">
+          <table width="560" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+            <tr>
+              <td style="background-color:#18181b; padding: 24px 32px;">
+                <p style="margin:0; color:#ffffff; font-size:20px; font-weight:bold;">📚 Library Management System</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 32px;">
+                <p style="margin: 0 0 8px 0; color:#71717a; font-size:13px; text-transform:uppercase; letter-spacing:0.05em;">Student Data Export</p>
+                <h1 style="margin: 0 0 24px 0; color:#18181b; font-size:22px;">Your export is ready</h1>
+                <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e4e4e7; border-radius:6px; overflow:hidden;">
+                  <tr style="background-color:#f4f4f5;">
+                    <td style="padding:12px 16px; color:#71717a; font-size:13px; width:130px;">Format</td>
+                    <td style="padding:12px 16px; color:#18181b; font-size:14px; font-weight:500;">${formatLabels[format] ?? format.toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px; color:#71717a; font-size:13px; border-top:1px solid #e4e4e7;">Total Records</td>
+                    <td style="padding:12px 16px; color:#18181b; font-size:14px; border-top:1px solid #e4e4e7;">${totalRecords} students</td>
+                  </tr>
+                  <tr style="background-color:#f4f4f5;">
+                    <td style="padding:12px 16px; color:#71717a; font-size:13px; border-top:1px solid #e4e4e7;">Exported At</td>
+                    <td style="padding:12px 16px; color:#18181b; font-size:14px; border-top:1px solid #e4e4e7;">${new Date().toLocaleString()}</td>
+                  </tr>
+                </table>
+                <p style="margin: 24px 0 0 0; color:#71717a; font-size:13px;">The file is attached to this email.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background-color:#f4f4f5; padding:16px 32px; border-top:1px solid #e4e4e7;">
+                <p style="margin:0; color:#a1a1aa; font-size:12px;">This is an automated export from the Library Management System.</p>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: `Student Data Export — ${formatLabels[format] ?? format.toUpperCase()}`,
+    html,
+    attachments: [
+      {
+        filename,
+        content: fileBuffer,
+        contentType: mimeTypes[format],
+      },
+    ],
+  });
 };

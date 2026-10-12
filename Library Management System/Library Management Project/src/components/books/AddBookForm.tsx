@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '../ui/button';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from '../ui/dialog';
-import { addBookSchema, type AddBook } from '@/lib/types';
-import { useAddBook } from '@/hooks/useBooks';
-import { toast } from 'sonner';
-import { uploadFile } from '@/lib/api/files';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { addBookSchema, type AddBook } from "@/lib/types";
+import { useAddBook } from "@/hooks/useBooks";
+import { toast } from "sonner";
+import { uploadFile } from "@/lib/api/files";
+import axios from "axios";
 
 const AddBookForm = () => {
   const [open, setOpen] = useState(false);
@@ -24,8 +34,8 @@ const AddBookForm = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2*1024*1024) {
-      toast.error('File size cannot be more than 2 MB');
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("File size cannot be more than 2 MB");
       e.target.value = "";
       return;
     }
@@ -36,9 +46,12 @@ const AddBookForm = () => {
     try {
       const result = await uploadFile(file);
       setFileId(result.id);
-      toast.success('Image uploaded successfully!');
-    } catch (error) {
-      toast.error("Failed to upload image");
+      toast.success("Image uploaded successfully!");
+    } catch (error: unknown) {
+      const message = axios.isAxiosError(error)
+        ? (error.response?.data?.message ?? "Failed to upload image")
+        : "Failed to upload image";
+      toast.error(message);
       setPreviewUrl(null);
     } finally {
       setUploading(false);
@@ -51,7 +64,7 @@ const AddBookForm = () => {
       title: "",
       author: "",
       isbn: "",
-    }
+    },
   });
 
   const addBookMutation = useAddBook();
@@ -65,18 +78,24 @@ const AddBookForm = () => {
   };
 
   const onSubmit = (book: AddBook) => {
-    addBookMutation.mutate({ ...book, file_id: fileId ?? undefined }, {
+    addBookMutation.mutate(
+      { ...book, file_id: fileId ?? undefined },
+      {
         onSuccess: () => {
           handleOpenChange(false);
           form.reset();
-        }
-      })
+        },
+      },
+    );
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
+        <Button
+          type="button"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground text-sm"
+        >
           + Add Book
         </Button>
       </DialogTrigger>
@@ -88,7 +107,7 @@ const AddBookForm = () => {
           <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
-              name='title'
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Book Title</FormLabel>
@@ -102,7 +121,7 @@ const AddBookForm = () => {
 
             <FormField
               control={form.control}
-              name='author'
+              name="author"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Book Author</FormLabel>
@@ -113,10 +132,10 @@ const AddBookForm = () => {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
-              name='isbn'
+              name="isbn"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>ISBN</FormLabel>
@@ -131,7 +150,10 @@ const AddBookForm = () => {
             {/* File upload field */}
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                Book Cover <span className="text-muted-foreground font-normal">(optional)</span>
+                Book Cover{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
               </label>
               <Input
                 type="file"
@@ -158,14 +180,22 @@ const AddBookForm = () => {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button type='submit' variant="outline" disabled={addBookMutation.isPending || uploading}>
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={addBookMutation.isPending || uploading}
+              >
                 {addBookMutation.isPending ? "Adding..." : "Add Book"}
               </Button>
-              <Button type='button' variant="outline" onClick={() => {
-                form.reset();
-                setFileId(null);
-                setPreviewUrl(null);
-              }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  form.reset();
+                  setFileId(null);
+                  setPreviewUrl(null);
+                }}
+              >
                 Reset
               </Button>
             </div>

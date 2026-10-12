@@ -15,6 +15,8 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useUpdateStudent } from "@/hooks/useStudents";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   student: Student;
@@ -25,6 +27,11 @@ interface Props {
 const allCountries = Country.getAllCountries();
 
 const StudentEditDialog = ({ student, open, onClose }: Props) => {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    student.profile_image_url ?? null,
+  );
+
   const form = useForm<EditStudent>({
     resolver: zodResolver(editStudentSchema),
     defaultValues: {
@@ -49,9 +56,20 @@ const StudentEditDialog = ({ student, open, onClose }: Props) => {
 
   const updateMutation = useUpdateStudent();
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be less than 2MB");
+      return;
+    }
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const onSubmit = (data: EditStudent) => {
     updateMutation.mutate(
-      { id: student.id, data },
+      { id: student.id, data, imageFile },
       {
         onSuccess: () => onClose(),
       },
@@ -194,6 +212,33 @@ const StudentEditDialog = ({ student, open, onClose }: Props) => {
                 </FormItem>
               )}
             />
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Profile Image</label>
+              {imagePreview && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {imageFile ? "New image:" : "Current image:"}
+                  </p>
+                  <img
+                    src={imagePreview}
+                    alt="Profile"
+                    className="w-20 h-20 rounded-full object-cover border border-border"
+                  />
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handleImageChange}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                {imagePreview
+                  ? "Select new image to replace current"
+                  : "JPEG or PNG, max 2MB"}
+              </p>
+            </div>
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={updateMutation.isPending}>

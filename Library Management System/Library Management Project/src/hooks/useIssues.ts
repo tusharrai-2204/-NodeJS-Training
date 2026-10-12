@@ -34,8 +34,9 @@ export const useReturnBook = () => {
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       toast.success("Book returned successfully!");
     },
-    onError: () => {
-      toast.error("Failed to return book.")
+    onError: (error: unknown) => {
+      const message = axios.isAxiosError(error) ? error.response?.data?.message : "Failed to return book";
+      toast.error(message);
     }
   });
 };

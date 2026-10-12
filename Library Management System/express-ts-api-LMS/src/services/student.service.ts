@@ -1,6 +1,9 @@
 import * as studentRepo from "../repositories/student.repo.js";
 import type { CreateStudentSchema, StudentQuerySchema, UpdateStudentSchema } from "../schema/student.schema.js";
-import { AppError, ConflictError, NotFoundError } from "../utils/AppError.js";
+import { AppError, BadRequestError, ConflictError, NotFoundError } from "../utils/AppError.js";
+import { generateCsv, generateExcel, generatePdf } from "../utils/export.util.js";
+import { uploadImageToCloudinary, deleteImageByUrl } from "./file.service.js";
+import { sendStudentExportEmail } from "./mail.service.js";
 
 // Students Listing
 export const listStudents = async (query: StudentQuerySchema) => {
@@ -39,19 +42,25 @@ export const getStudent = async (id: number) => {
 };
 
 // Create a new student 
-export const addStudent = async (input: CreateStudentSchema) => {
+export const addStudent = async (input: CreateStudentSchema, imageFile?: Express.Multer.File) => {
   const existingStudent = await studentRepo.findStudentByRollNo(input.roll_no);
   if (existingStudent) {
     throw new ConflictError('A Student already exists with this Roll number');
   }
 
-  const studentId = await studentRepo.createStudent(input);
+  let profile_image_url: string | null = null;
+
+  if (imageFile) {
+    profile_image_url = await uploadImageToCloudinary(imageFile, 'lms/students');
+  }
+
+  const studentId = await studentRepo.createStudent({...input, profile_image_url});
 
   return await studentRepo.findStudentById(studentId);
 };
 
 // Edit any Student
-export const editStudent = async (id: number, input: UpdateStudentSchema) => {
+export const editStudent = async (id: number, input: UpdateStudentSchema, imageFile?: Express.Multer.File) => {
   const existingStudent = await studentRepo.findStudentById(id);
 
   if (!existingStudent) {
@@ -63,7 +72,20 @@ export const editStudent = async (id: number, input: UpdateStudentSchema) => {
     if (conflict) throw new ConflictError('A student with this roll number already exists');
   }
 
-  const studentUpdated = await studentRepo.updateStudent(id, input);
+  let profile_image_url: string | undefined = undefined;
+
+  if (imageFile) {
+    // delete the existing profile image
+    if (existingStudent.profile_image_url) {
+      await deleteImageByUrl(existingStudent.profile_image_url);
+    }
+    profile_image_url = await uploadImageToCloudinary(imageFile, 'lms/students');
+  }
+
+  const studentUpdated = await studentRepo.updateStudent(id, {
+    ...input,
+    ...(profile_image_url !== undefined ? { profile_image_url } : {})
+  });
 
   if (!studentUpdated) {
     throw new AppError('Failed to update student', 500);
@@ -83,5 +105,36 @@ export const removeStudent = async (id: number) => {
 
   if (!studentDeleted) {
     throw new AppError('Failed to delete student', 500);
+  }
+
+  if (existingStudent.profile_image_url) {
+    await deleteImageByUrl(existingStudent.profile_image_url);
+  }
+};
+
+// Export student data 
+export const exportStudents = async (format: string, userEmail: string) => {
+  const validFormats = ["csv", "excel", "pdf"];
+  if (!validFormats.includes(format)) {
+    throw new BadRequestError(`Invalid Format. Use: ${validFormats.join(', ')}`);
+  }
+
+  const students = await studentRepo.exportAllStudents();
+
+  let fileBuffer: Buffer;
+  if (format === 'csv') {
+    fileBuffer = generateCsv(students);
+  } else if (format === 'excel') {
+    fileBuffer = await generateExcel(students);
+  } else {
+    fileBuffer = await generatePdf(students);
+  }
+
+  sendStudentExportEmail(userEmail, format, fileBuffer, students.length)
+  .catch(err => console.error(`Failed to send export email: ${err}`));
+
+  return {
+    buffer: fileBuffer,
+    format, totalRecords: students.length
   }
 }

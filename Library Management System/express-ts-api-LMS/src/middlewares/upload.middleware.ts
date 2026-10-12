@@ -18,3 +18,17 @@ export const uploadFileMiddleware = multer({
     }
   }
 }).single('file');
+
+export const uploadImageMiddleware = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  },
+  fileFilter: (_req: Request, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new BadRequestError(`Invalid file type: ${file.mimetype}. Please provide a JPEG, JPG or PNG image.`));
+    }
+  }
+}).single('profile_image');

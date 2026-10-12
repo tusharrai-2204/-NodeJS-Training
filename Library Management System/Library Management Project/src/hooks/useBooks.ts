@@ -1,6 +1,7 @@
 import { addBook, deleteBook, getBooks, updateBook } from "@/lib/api/books";
 import type { BooksQueryParams } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { toast } from "sonner";
 
 export const useBooksQuery = (params: BooksQueryParams) =>
@@ -17,9 +18,9 @@ export const useAddBook = () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       toast.success("Book added!");
     },
-    onError: (error) => {
-      console.error("Error adding book:", error.message);
-      toast.error("Failed to add book.");
+    onError: (error: unknown) => {
+      const message = axios.isAxiosError(error) ? error.response?.data?.message : "Failed to add book";
+      toast.error(message);
     },
   });
 };
@@ -32,9 +33,9 @@ export const useUpdateBook = () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       toast.success("Book updated successfully!");
     },
-    onError: (error) => {
-      console.error("Error updating book:", error.message);
-      toast.error("Failed to update book.");
+    onError: (error: unknown) => {
+      const message = axios.isAxiosError(error) ? error.response?.data?.message : "Failed to update book";
+      toast.error(message);
     },
   });
 };
@@ -47,9 +48,9 @@ export const useDeleteBook = () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
       toast.success("Book deleted successfully!");
     },
-    onError: (error) => {
-      console.error('Error delete book:', error.message);
-      toast.error("Failed to delete book.");
+    onError: (error: unknown) => {
+      const message = axios.isAxiosError(error) ? error.response?.data?.message : "Failed to delete book";
+      toast.error(message);
     }
   });
 };

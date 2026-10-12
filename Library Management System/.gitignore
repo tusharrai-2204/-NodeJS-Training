@@ -3,3 +3,4 @@ json-server
 LMS_Basic_Auth_Setup.zip
 .env
 dist
+deployment.md

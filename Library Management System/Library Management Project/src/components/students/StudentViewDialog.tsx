@@ -14,7 +14,16 @@ const StudentViewDialog = ({ student, open, onClose }: Props) => {
         <DialogHeader>
           <DialogTitle>Student Details</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 pt-2 text-sm">
+        <div className="space-y-4 pt-2 text-sm">
+          {student.profile_image_url && (
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={student.profile_image_url}
+                alt={student.student_name}
+                className="w-24 h-24 rounded-full object-cover border border-border"
+              />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <span className="text-muted-foreground">ID</span>
             <span>{student.id}</span>

@@ -6,6 +6,7 @@ export interface Student {
   country: string;
   state: string;
   city: string;
+  profile_image_url: string | null,
   created_at: Date;
   modified_at: Date;
 }
