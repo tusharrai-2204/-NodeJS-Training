@@ -10,6 +10,8 @@ function delayedUpperCase(param) {
     setTimeout(() => {
       if (typeof param === 'string') {
         resolve(param.toUpperCase());
+      } else if(typeof param === 'number') {
+        resolve(`Chandan`);
       } else {
         reject(param);
       }

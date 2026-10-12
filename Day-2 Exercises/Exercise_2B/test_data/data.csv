@@ -1,0 +1,5 @@
+id,name,author,price,tags
+1,Harry Potter,J.K. Rowling,499,
+2,"War, and Peace",Tolstoy,,
+3,"The ""Best"" Book",Anon,,"[""a"",""b""]"
+4,Line\nBreak,'=SUM(A1:A2),,
