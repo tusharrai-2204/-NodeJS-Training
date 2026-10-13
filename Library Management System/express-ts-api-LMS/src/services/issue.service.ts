@@ -12,8 +12,8 @@ import {
   NotFoundError,
 } from "../utils/AppError.js";
 
-export const listIssues = async (query: IssueQuerySchema) => {
-  const { issues, total } = await issueRepo.getIssues(query);
+export const listIssues = async (query: IssueQuerySchema, forceStudentId?: number) => {
+  const { issues, total } = await issueRepo.getIssues({ ...query, forceStudentId });
   return {
     issues,
     meta: {

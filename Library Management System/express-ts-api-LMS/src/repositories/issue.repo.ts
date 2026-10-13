@@ -2,22 +2,28 @@ import { type ExecuteValues, type ResultSetHeader, type RowDataPacket } from "my
 import pool from "../config/db.js";
 import type { Issue, IssueQueryParams, IssueResponse } from "../models/issue.model.js";
 
-export const getIssues = async (params: IssueQueryParams): Promise<{ issues: IssueResponse[]; total: number }> => {
+export const getIssues = async (params: IssueQueryParams & { forceStudentId?: number }): Promise<{ issues: IssueResponse[]; total: number }> => {
     const offset = (params.page - 1) * params.pageSize;
 
     // Build where condition clause with its placeholder values
     const conditions: string[] = [];
     const values: unknown[] = [];
 
-    if (params.studentId !== null) {
-        conditions.push('i.student_id = ?');
-        values.push(params.studentId);
+    if (params.forceStudentId !== undefined) {
+        conditions.push(`i.student_id = ?`);
+        values.push(params.forceStudentId);
+    } else {
+        if (params.studentId !== null) {
+            conditions.push('i.student_id = ?');
+            values.push(params.studentId);
+        }
+    
+        if (params.bookId !== null) {
+            conditions.push('i.book_id = ?');
+            values.push(params.bookId);
+        }
     }
 
-    if (params.bookId !== null) {
-        conditions.push('i.book_id = ?');
-        values.push(params.bookId);
-    }
 
     const whereClause = conditions.length > 0 ? `where  ${conditions.join(' and ')}` : '';
 

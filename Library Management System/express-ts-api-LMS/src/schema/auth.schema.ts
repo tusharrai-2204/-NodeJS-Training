@@ -13,5 +13,16 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const studentLoginSchema = z.object({
+  roll_no: z.string().min(1, "Roll number is required"),
+  phone: z.string().min(1, "Phone number is required"),
+});
+
+export const changePasswordSchema = z.object({
+  new_password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type StudentLoginInput = z.infer<typeof studentLoginSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

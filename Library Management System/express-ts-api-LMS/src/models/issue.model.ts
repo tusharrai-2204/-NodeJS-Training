@@ -25,4 +25,5 @@ export type IssueQueryParams = {
   pageSize: number;
   studentId: number | null;
   bookId: number | null;
+  forceStudentId?: number;
 };

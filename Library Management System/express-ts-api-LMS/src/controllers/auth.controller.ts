@@ -1,16 +1,18 @@
 import type { Request, Response } from "express";
-import type {
-  LoginInput,
-  RegisterInput,
-} from "../schema/auth.schema.js";
+import type { ChangePasswordInput, LoginInput, RegisterInput } from "../schema/auth.schema.js";
 import * as authService from "../services/auth.service.js";
-import { generateRefreshToken, hashRefreshToken, signAccessToken } from "../utils/jwt.util.js";
+import {
+  generateRefreshToken,
+  hashRefreshToken,
+  signAccessToken,
+} from "../utils/jwt.util.js";
 import passport from "passport";
-import { NotFoundError } from "../utils/AppError.js";
+import { NotFoundError, UnauthorizedError } from "../utils/AppError.js";
 import * as refreshTokenRepo from "../repositories/refreshToken.repo.js";
-import * as userRepo from '../repositories/user.repo.js';
+import * as userRepo from "../repositories/user.repo.js";
+import bcrypt from 'bcrypt';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -26,24 +28,41 @@ const REFRESH_COOKIE_OPTIONS = {
   maxAge: 24 * 7 * 60 * 60 * 1000, // 7 days
 };
 
-const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
 // Helper method to issue refresh + access token and set cookies
-const issueTokens = async (res: Response, user: { id: number; email: string; role: 'admin' | 'user' }) => {
+const issueTokens = async (
+  res: Response,
+  user: {
+    id: number;
+    email: string;
+    role: "admin" | "user" | "student";
+    student_id?: number | null;
+    password_changed?: boolean;
+  },
+) => {
   const accessToken = signAccessToken({
     userId: user.id,
     email: user.email,
-    role: user.role
+    role: user.role,
+    ...(user.role === "student" && {
+      studentId: user.student_id ?? undefined,
+      requiresPasswordChange: !user.password_changed,
+    }),
   });
 
   const refreshToken = generateRefreshToken();
   const refreshTokenHash = hashRefreshToken(refreshToken);
 
   const refreshTokenExpiry = new Date(Date.now() + 24 * 7 * 60 * 60 * 1000);
-  await refreshTokenRepo.saveRefreshToken(user.id, refreshTokenHash, refreshTokenExpiry);
+  await refreshTokenRepo.saveRefreshToken(
+    user.id,
+    refreshTokenHash,
+    refreshTokenExpiry,
+  );
 
-  res.cookie('access_token', accessToken, ACCESS_COOKIE_OPTIONS);
-  res.cookie('refresh_token', refreshToken, REFRESH_COOKIE_OPTIONS);
+  res.cookie("access_token", accessToken, ACCESS_COOKIE_OPTIONS);
+  res.cookie("refresh_token", refreshToken, REFRESH_COOKIE_OPTIONS);
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -59,18 +78,53 @@ export const login = async (req: Request, res: Response) => {
   });
 };
 
-
 export const register = async (req: Request, res: Response) => {
   const input = req.body as RegisterInput;
   const user = await authService.registerUser(input);
 
-  await issueTokens(res, { id: user.id, email: user.email, role: 'user' })
+  await issueTokens(res, { id: user.id, email: user.email, role: "user" });
 
   res.status(201).json({
     success: true,
     message: "Registered successfully",
     data: { ...user },
   });
+};
+
+export const studentLogin = async (req: Request, res: Response) => {
+  const input = req.body as { roll_no: string; phone: string };
+  const user = await authService.studentLoginUser(input);
+
+  await issueTokens(res, {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    student_id: user.student_id,
+    password_changed: user.password_changed,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Login successful",
+    data: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      requiresPasswordChange: !user.password_changed,
+    },
+  });
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new UnauthorizedError('Please login');
+  }
+
+  const { new_password } = req.body as ChangePasswordInput;
+  const hashedPassword = await bcrypt.hash(new_password, 10);
+  await userRepo.updateUserPassword(req.user.userId, hashedPassword);
+
+  res.status(200).json({ success: true, message: "Password changed successfully" });
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -81,8 +135,8 @@ export const logout = async (req: Request, res: Response) => {
     await refreshTokenRepo.deleteRefreshToken(hash);
   }
 
-  res.clearCookie('access_token', ACCESS_COOKIE_OPTIONS);
-  res.clearCookie('refresh_token', REFRESH_COOKIE_OPTIONS);
+  res.clearCookie("access_token", ACCESS_COOKIE_OPTIONS);
+  res.clearCookie("refresh_token", REFRESH_COOKIE_OPTIONS);
 
   res.status(200).json({
     success: true,
@@ -96,7 +150,7 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
   if (!refreshToken) {
     res.status(401).json({
       success: false,
-      message: 'No refresh token'
+      message: "No refresh token",
     });
     return;
   }
@@ -107,25 +161,31 @@ export const refreshTokenHandler = async (req: Request, res: Response) => {
   if (!storedToken) {
     res.status(401).json({
       success: false,
-      message: 'Invalid or expired refresh token'
+      message: "Invalid or expired refresh token",
     });
     return;
   }
 
   const user = await userRepo.findUserById(storedToken.user_id);
   if (!user) {
-    res.status(401).json({ success: false, message: 'Invalid refresh token' });
+    res.status(401).json({ success: false, message: "Invalid refresh token" });
     return;
   }
 
   await refreshTokenRepo.deleteRefreshToken(hash);
-  await issueTokens(res, { id: user.id, email: user.email, role: user.role })
+  await issueTokens(res, {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    student_id: user.student_id,
+    password_changed: user.password_changed,
+  });
 
   res.status(200).json({
     success: true,
-    message: "Tokens refreshed successfully"
+    message: "Tokens refreshed successfully",
   });
-}
+};
 
 export const googleAuth = passport.authenticate("google", {
   scope: ["profile", "email"],
@@ -150,11 +210,10 @@ export const googleCallback = async (req: Request, res: Response) => {
 };
 
 export const getMe = async (req: Request, res: Response) => {
-  // req.user has { userId, email, role } from the JWT
   const user = await userRepo.findUserById(req.user!.userId);
 
   if (!user) {
-    throw new NotFoundError('User Not Found');
+    throw new NotFoundError("User Not Found");
   }
 
   const { password, ...safeUser } = user;

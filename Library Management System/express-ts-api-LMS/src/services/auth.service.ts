@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from "../schema/auth.schema.js";
+import type { LoginInput, RegisterInput, StudentLoginInput } from "../schema/auth.schema.js";
 import * as userRepo from "../repositories/user.repo.js";
 import bcrypt from 'bcrypt';
 import { BadRequestError, ConflictError, UnauthorizedError } from "../utils/AppError.js";
@@ -29,7 +29,9 @@ export const registerUser = async (registerInput: RegisterInput) => {
         auth_provider: 'local',
         provider_user_id: null,
         password: hashedPassword,
-        role: 'user'
+        role: 'user',
+        student_id: null,
+        password_changed: true
     });
 
     return { id: userId, email: registerInput.email }; 
@@ -79,9 +81,32 @@ export const googleAuthUser = async (input: GoogleAuthInput) => {
         auth_provider: 'google',
         provider_user_id: input.googleId,
         password: null,
-        role: 'user'
+        role: 'user',
+        student_id: null,
+        password_changed: true
     });
 
     const newUser = await userRepo.findUserById(userId);
     return newUser!;
 }
+
+export const studentLoginUser = async (input: StudentLoginInput) => {
+    const user = await userRepo.findUserByEmail(input.roll_no);
+
+    if (!user || user.role !== 'student') {
+        throw new UnauthorizedError("Invalid credentials");
+    }
+
+    if (!user.password) {
+        throw new UnauthorizedError("Invalid credentials");
+    }
+
+    const isPasswordValid = await bcrypt.compare(input.phone, user.password);
+    
+    if (!isPasswordValid) {
+        throw new UnauthorizedError("Invalid credentials");
+    }
+
+    const { password, ...croppedUser } = user;
+    return croppedUser;
+};

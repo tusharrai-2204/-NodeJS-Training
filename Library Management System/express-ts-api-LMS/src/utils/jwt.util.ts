@@ -6,7 +6,9 @@ const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
 export interface AccessTokenPayload {
     userId: number,
     email: string,
-    role: 'admin' | 'user'
+    role: 'admin' | 'user' | 'student',
+    studentId?: number,
+    requiresPasswordChange?: boolean
 };
 
 export const signAccessToken = (payload: AccessTokenPayload): string => {

@@ -61,12 +61,13 @@ export const findStudentById = async (
 };
 
 // get student by roll number
-export const findStudentByRollNo = async (
-  rollNo: string,
+export const findStudentByRollNoOrPhone = async (
+  rollNo: string | null,
+  phone: string | null
 ): Promise<Student | null> => {
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `select * from students where roll_no = ?`,
-    [rollNo],
+    `select * from students where roll_no = ? or phone = ?`,
+    [rollNo, phone],
   );
 
   if (rows.length === 0) {

@@ -13,6 +13,7 @@ import IssueBookPage from "./components/issues/IssueBookPage.tsx";
 import AddBookPage from "./components/books/AddBookPage.tsx";
 import EditBookPage from "./components/books/EditBookPage.tsx";
 import StudentEditPage from "./components/students/StudentEditPage.tsx";
+import ChangePasswordPage from "./components/auth/ChangePasswordPage.tsx";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
 
         <Route
           path="/*"

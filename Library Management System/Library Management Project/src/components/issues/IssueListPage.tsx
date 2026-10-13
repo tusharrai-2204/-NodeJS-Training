@@ -101,84 +101,86 @@ const IssueListPage = () => {
   return (
     <div className="min-h-full bg-[#f1f4f7] p-4 md:p-5 space-y-3">
       {/* Filter Card */}
-      <div className="bg-white border border-[#e2e7eb] rounded-xs px-5 py-4">
-        <div className="flex items-end gap-4 flex-wrap">
-          {/* Student Name dropdown */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#53606c]">Student Name</label>
-            <select
-              className={selectCls}
-              value={selectedStudentId ?? ""}
-              onChange={(e) =>
-                setSelectedStudentId(
-                  e.target.value ? Number(e.target.value) : null,
-                )
-              }
+      {isAdmin && (
+        <div className="bg-white border border-[#e2e7eb] rounded-xs px-5 py-4">
+          <div className="flex items-end gap-4 flex-wrap">
+            {/* Student Name dropdown */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[12px] text-[#53606c]">Student Name</label>
+              <select
+                className={selectCls}
+                value={selectedStudentId ?? ""}
+                onChange={(e) =>
+                  setSelectedStudentId(
+                    e.target.value ? Number(e.target.value) : null,
+                  )
+                }
+              >
+                <option value="">All Students</option>
+                {students?.map((s: StudentDropDownItem) => (
+                  <option key={s.id} value={s.id}>
+                    {s.student_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Book Name dropdown */}
+            <div className="flex flex-col gap-1">
+              <label className="text-[12px] text-[#53606c]">Book Name</label>
+              <select
+                className={selectCls}
+                value={selectedBookId ?? ""}
+                onChange={(e) =>
+                  setSelectedBookId(
+                    e.target.value ? Number(e.target.value) : null,
+                  )
+                }
+              >
+                <option value="">All Books</option>
+                {books?.map((b: { id: number; title: string }) => (
+                  <option key={b.id} value={b.id}>
+                    {b.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search button */}
+            <Button
+              type="button"
+              onClick={handleSearch}
+              className="h-9 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-[#171e27]"
+              style={{ backgroundColor: "#feca05", borderColor: "#feca05" }}
             >
-              <option value="">All Students</option>
-              {students?.map((s: StudentDropDownItem) => (
-                <option key={s.id} value={s.id}>
-                  {s.student_name}
-                </option>
-              ))}
-            </select>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="mr-1.5"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              Search
+            </Button>
+
+            {/* Clear Filter Button */}
+            <Button
+              type="button"
+              onClick={handleClear}
+              className="h-9 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
+              style={{ backgroundColor: "#4caf50", borderColor: "#4caf50" }}
+            >
+              Clear
+            </Button>
           </div>
-
-          {/* Book Name dropdown */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[12px] text-[#53606c]">Book Name</label>
-            <select
-              className={selectCls}
-              value={selectedBookId ?? ""}
-              onChange={(e) =>
-                setSelectedBookId(
-                  e.target.value ? Number(e.target.value) : null,
-                )
-              }
-            >
-              <option value="">All Books</option>
-              {books?.map((b: { id: number; title: string }) => (
-                <option key={b.id} value={b.id}>
-                  {b.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Search button */}
-          <Button
-            type="button"
-            onClick={handleSearch}
-            className="h-9 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-[#171e27]"
-            style={{ backgroundColor: "#feca05", borderColor: "#feca05" }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="mr-1.5"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            Search
-          </Button>
-
-          {/* Clear Filter Button */}
-          <Button
-            type="button"
-            onClick={handleClear}
-            className="h-9 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
-            style={{ backgroundColor: "#4caf50", borderColor: "#4caf50" }}
-          >
-            Clear
-          </Button>
         </div>
-      </div>
+      )}
 
       {/* Table Card */}
       <div className="bg-white border border-[#e2e7eb] rounded-xs overflow-hidden">

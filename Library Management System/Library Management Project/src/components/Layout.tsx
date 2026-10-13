@@ -113,7 +113,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Nav links */}
         <nav className="flex flex-col flex-1 mt-2">
-          {[
+          {([
             {
               to: "/books",
               label: "Book List",
@@ -156,28 +156,32 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 </svg>
               ),
             },
-            {
-              to: "/students",
-              label: "Student List",
-              icon: (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                  <polyline points="2 17 12 22 22 17" />
-                  <polyline points="2 12 12 17 22 12" />
-                </svg>
-              ),
-            },
-          ].map((item) => {
+            ...(user?.role === "admin"
+              ? [
+                  {
+                    to: "/students",
+                    label: "Student List",
+                    icon: (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="15"
+                        height="15"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                        <polyline points="2 17 12 22 22 17" />
+                        <polyline points="2 12 12 17 22 12" />
+                      </svg>
+                    ),
+                  },
+                ]
+              : []),
+          ] as { to: string; label: string; icon: React.ReactNode }[]).map((item) => {
             const isActive =
               location.pathname === item.to ||
               location.pathname.startsWith(item.to + "/");

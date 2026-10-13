@@ -9,12 +9,12 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/', validateQuery(studentQuerySchema), getStudents);
-router.get('/all', getAllStudents);
+router.get('/', requireRole('admin'), validateQuery(studentQuerySchema), getStudents);
+router.get('/all', requireRole('admin'), getAllStudents);
 
-router.get('/export', exportStudents);
+router.get('/export', requireRole('admin'), exportStudents);
 
-router.get('/:id', getStudent);
+router.get('/:id', requireRole('admin'), getStudent);
 router.post('/', requireRole('admin'), uploadImageMiddleware, createStudent);
 router.patch('/:id', requireRole('admin'), uploadImageMiddleware, updateStudent);
 router.delete('/:id', requireRole('admin'), deleteStudent);

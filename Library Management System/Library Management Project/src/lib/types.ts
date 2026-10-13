@@ -36,7 +36,7 @@ export const addBookSchema = z.object({
       "ISBN must be 10 or 13 digits",
     )
     .refine((val) => /^[0-9X]+$/i.test(val), "ISBN must contain only digits"),
-  file_id: z.number().int().positive().optional().nullable()
+  file_id: z.number().int().positive().optional().nullable(),
 });
 
 export type AddBook = z.infer<typeof addBookSchema>;
@@ -48,7 +48,7 @@ export const editBookSchema = z.object({
     .min(2, "Author name must be at least 2 characters")
     .max(100),
   isbn: z.string().min(10).max(13),
-  file_id: z.number().int().positive().optional().nullable()
+  file_id: z.number().int().positive().optional().nullable(),
 });
 
 export type EditBook = z.infer<typeof editBookSchema>;
@@ -71,7 +71,7 @@ export type Student = {
   country: string;
   state: string;
   city: string;
-  profile_image_url: string | null,
+  profile_image_url: string | null;
   created_at: Date;
   modified_at: Date;
 };
@@ -115,7 +115,7 @@ export type StudentsQueryParams = {
   pageSize: number;
   search: string;
   sortBy?: string | null;
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
 };
 
 // ----------- book issue related types and schemas  ---------------
@@ -128,7 +128,7 @@ export type Issue = {
   student_name: string;
   issued_at: string;
   return_date: string | null;
-  status: 'issued' | 'returned';
+  status: "issued" | "returned";
 };
 
 export type IssueQueryParams = {
@@ -161,5 +161,25 @@ export type AuthUser = {
   email: string;
   first_name: string;
   last_name: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user" | "student";
+  studentId?: number;
+  requiresPasswordChange?: boolean;
 };
+
+export const studentLoginSchema = z.object({
+  roll_no: z.string().min(1, "Roll number is required"),
+  phone: z.string().min(1, "Phone number is required"),
+});
+
+export const changePasswordSchema = z
+  .object({
+    new_password: z.string().min(6, "Password must be at least 6 characters"),
+    confirm_password: z.string().min(6, "Please confirm your password"),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
+
+export type StudentLoginForm = z.infer<typeof studentLoginSchema>;
+export type ChangePasswordForm = z.infer<typeof changePasswordSchema>;

@@ -4,6 +4,9 @@ import { AppError, BadRequestError, ConflictError, NotFoundError } from "../util
 import { generateCsv, generateExcel, generatePdf } from "../utils/export.util.js";
 import { uploadImageToCloudinary, deleteImageByUrl } from "./file.service.js";
 import { sendStudentExportEmail } from "./mail.service.js";
+import * as userRepo from "../repositories/user.repo.js";
+import bcrypt from 'bcrypt';
+import pool from "../config/db.js";
 
 // Students Listing
 export const listStudents = async (query: StudentQuerySchema) => {
@@ -43,9 +46,9 @@ export const getStudent = async (id: number) => {
 
 // Create a new student 
 export const addStudent = async (input: CreateStudentSchema, imageFile?: Express.Multer.File) => {
-  const existingStudent = await studentRepo.findStudentByRollNo(input.roll_no);
+  const existingStudent = await studentRepo.findStudentByRollNoOrPhone(input.roll_no, input.phone);
   if (existingStudent) {
-    throw new ConflictError('A Student already exists with this Roll number');
+    throw new ConflictError('A Student already exists with this Roll number or Phone number.');
   }
 
   let profile_image_url: string | null = null;
@@ -55,6 +58,20 @@ export const addStudent = async (input: CreateStudentSchema, imageFile?: Express
   }
 
   const studentId = await studentRepo.createStudent({...input, profile_image_url});
+
+  const hashedPhone = await bcrypt.hash(input.phone, 10);
+  await userRepo.createUser({
+    first_name: input.student_name,
+    middle_name: null,
+    last_name: '',
+    email: input.roll_no,
+    auth_provider: 'local',
+    provider_user_id: null,
+    role: 'student',
+    password: hashedPhone,
+    student_id: studentId,
+    password_changed: false
+  });
 
   return await studentRepo.findStudentById(studentId);
 };
@@ -67,9 +84,9 @@ export const editStudent = async (id: number, input: UpdateStudentSchema, imageF
     throw new NotFoundError('Student not found');
   }
 
-  if (input.roll_no && input.roll_no !== existingStudent.roll_no) {
-    const conflict = await studentRepo.findStudentByRollNo(input.roll_no);
-    if (conflict) throw new ConflictError('A student with this roll number already exists');
+  if ((input.roll_no && input.roll_no !== existingStudent.roll_no) || (input.phone && input.phone !== existingStudent.phone)) {
+    const conflict = await studentRepo.findStudentByRollNoOrPhone(input.roll_no ?? null, input.phone ?? null);
+    if (conflict) throw new ConflictError('A student with this roll number or phone already exists');
   }
 
   let profile_image_url: string | undefined = undefined;
@@ -89,6 +106,20 @@ export const editStudent = async (id: number, input: UpdateStudentSchema, imageF
 
   if (!studentUpdated) {
     throw new AppError('Failed to update student', 500);
+  }
+
+  const linkedUser = await userRepo.findUserByStudentId(id);
+  if (linkedUser) {
+    // If roll_no changed → update users.email
+    if (input.roll_no && input.roll_no !== existingStudent.roll_no) {
+      await userRepo.updateUserEmail(linkedUser.id, input.roll_no);
+    }
+
+    // If phone changed AND student hasn't set their own password yet → re-hash and update
+    if (input.phone && input.phone !== existingStudent.phone && !linkedUser.password_changed) {
+      const hashedPhone = await bcrypt.hash(input.phone, 10);
+      await userRepo.syncUserPassword(linkedUser.id, hashedPhone);
+    }
   }
 
   return await studentRepo.findStudentById(id);

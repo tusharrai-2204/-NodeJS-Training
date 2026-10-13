@@ -7,7 +7,9 @@ export interface User {
   auth_provider: 'local' | 'google',
   provider_user_id: string | null,
   password: string | null, // can be null for google logged in user
-  role: 'admin' | 'user',
+  role: 'admin' | 'user' | 'student',
+  student_id: number | null,
+  password_changed: boolean,
   created_at: Date | null,
   modified_at: Date | null
 };

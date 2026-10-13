@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../middlewares/schema.middleware.js";
-import { loginSchema, registerSchema } from "../schema/auth.schema.js";
-import { getMe, googleAuth, googleCallback, login, logout, refreshTokenHandler, register } from "../controllers/auth.controller.js";
+import { changePasswordSchema, loginSchema, registerSchema, studentLoginSchema } from "../schema/auth.schema.js";
+import { changePassword, getMe, googleAuth, googleCallback, login, logout, refreshTokenHandler, register, studentLogin } from "../controllers/auth.controller.js";
 import passport from "passport";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { authRateLimiter } from "../middlewares/rateLimit.middleware.js";
@@ -10,10 +10,12 @@ const router = Router();
 
 router.post('/register', authRateLimiter, validate(registerSchema), register);
 router.post('/login', authRateLimiter, validate(loginSchema), login);
+router.post('/student-login', authRateLimiter, validate(studentLoginSchema), studentLogin);
 
 router.post('/logout', logout);
 router.get('/me', requireAuth, getMe);
 router.post('/refresh', refreshTokenHandler);
+router.post('/change-password', requireAuth, validate(changePasswordSchema), changePassword);
 
 router.get('/google', googleAuth);
 router.get('/google/callback', 

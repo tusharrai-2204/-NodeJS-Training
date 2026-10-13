@@ -42,6 +42,8 @@ export const useAuthStore = create<AuthState>()(
               first_name: data.first_name,
               last_name: data.last_name,
               role: data.role,
+              studentId: data.student_id ?? undefined,
+              requiresPasswordChange: !data.password_changed && data.role === 'student'
             },
             isAuthenticated: true,
           });

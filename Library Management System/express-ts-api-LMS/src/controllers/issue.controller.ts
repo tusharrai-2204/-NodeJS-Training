@@ -3,9 +3,12 @@ import type { CreateIssueSchema, IssueQuerySchema } from '../schema/issue.schema
 import * as issueService from '../services/issue.service.js';
 import { BadRequestError } from '../utils/AppError.js';
 
-export const getIssues = async (_req: Request, res: Response) => {
+export const getIssues = async (req: Request, res: Response) => {
   const query = res.locals.query as IssueQuerySchema;
-  const result = await issueService.listIssues(query);
+
+  const forceStudentId = req.user?.role === 'student' ? req.user.studentId : undefined;
+
+  const result = await issueService.listIssues(query, forceStudentId);
   res.status(200).json({ success: true, data: result.issues, meta: result.meta });
 };
 

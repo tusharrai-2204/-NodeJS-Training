@@ -6,7 +6,9 @@ declare global {
     interface User {
       userId: number;
       email: string;
-      role: "admin" | "user";
+      role: "admin" | "user" | "student";
+      studentId?: number;
+      requiresPasswordChange?: boolean;
     }
   }
 }
@@ -39,7 +41,7 @@ export const requireAuth = (
 };
 
 // Role-based authorization
-export const requireRole = (...roles: ("admin" | "user")[]) => {
+export const requireRole = (...roles: ("admin" | "user" | "student")[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       res.status(401).json({
