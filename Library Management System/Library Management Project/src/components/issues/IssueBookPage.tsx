@@ -32,53 +32,75 @@ const IssueBookPage = () => {
     );
   };
 
+  const selectCls = "w-full h-9 rounded-xs border border-[#d5dde3] bg-[#eff3f6] text-[12px] text-[#344454] px-2 outline-none focus:border-[#2196f3] cursor-pointer";
+  const labelCls = "w-[200px] shrink-0 pt-2 text-[13px] text-[#53606c]";
+
   return (
-    <div className="max-w-md">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Issue Book</h1>
-        <p className="text-sm text-muted-foreground mt-1">Issue a book to a student</p>
-      </div>
+    <div className="min-h-full bg-[#f1f4f7] p-4 md:p-5">
+      <div className="bg-white border border-[#e2e7eb] rounded-xs overflow-hidden">
 
-      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Book</label>
-          <select
-            className="w-full border border-border rounded-md px-3 py-2 text-sm bg-secondary"
-            value={selectedBookId ?? ""}
-            onChange={(e) => setSelectedBookId(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">Select a book</option>
-            {books?.map((b: { id: number; title: string }) => (
-              <option key={b.id} value={b.id}>{b.title}</option>
-            ))}
-          </select>
+        {/* Card header */}
+        <div className="px-5 py-3 border-b border-[#e5e9ed]">
+          <h2 className="text-[14px] font-semibold text-[#243447]">Issue Book</h2>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Student</label>
-          <select
-            className="w-full border border-border rounded-md px-3 py-2 text-sm bg-secondary"
-            value={selectedStudentId ?? ""}
-            onChange={(e) => setSelectedStudentId(e.target.value ? Number(e.target.value) : null)}
-          >
-            <option value="">Select a student</option>
-            {students?.map((s: StudentDropDownItem) => (
-              <option key={s.id} value={s.id}>{s.student_name}</option>
-            ))}
-          </select>
-        </div>
+        {/* Form body */}
+        <div className="px-5 py-5">
 
-        <div className="flex gap-3 pt-2">
-          <Button
-            onClick={handleIssue}
-            disabled={!selectedBookId || !selectedStudentId || createMutation.isPending}
-          >
-            {createMutation.isPending ? "Issuing..." : "Issue Book"}
-          </Button>
-          <Button variant="outline" onClick={() => navigate("/issues")}>
-            Cancel
-          </Button>
+          {/* Book Name */}
+          <div className="mb-4 flex items-start">
+            <label className={labelCls}>Book Name</label>
+            <div className="flex-1 max-w-125">
+              <select
+                className={selectCls}
+                value={selectedBookId ?? ""}
+                onChange={(e) => setSelectedBookId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Select Book Name</option>
+                {books?.map((b: { id: number; title: string }) => (
+                  <option key={b.id} value={b.id}>{b.title}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Student Name */}
+          <div className="mb-4 flex items-start">
+            <label className={labelCls}>Student Name</label>
+            <div className="flex-1 max-w-125">
+              <select
+                className={selectCls}
+                value={selectedStudentId ?? ""}
+                onChange={(e) => setSelectedStudentId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">Select Student Name</option>
+                {students?.map((s: StudentDropDownItem) => (
+                  <option key={s.id} value={s.id}>{s.student_name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Buttons — right aligned */}
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-[#e5e9ed]">
+            <Button
+              type="button"
+              onClick={handleIssue}
+              disabled={!selectedBookId || !selectedStudentId || createMutation.isPending}
+              className="h-8 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
+              style={{ backgroundColor: "#2196f3", borderColor: "#2196f3" }}
+            >
+              {createMutation.isPending ? "Issuing..." : "Issue"}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => navigate("/issues")}
+              className="h-8 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
+              style={{ backgroundColor: "#f44336", borderColor: "#f44336" }}
+            >
+              Cancel
+            </Button>
+          </div>
         </div>
       </div>
     </div>

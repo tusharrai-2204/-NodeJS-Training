@@ -39,9 +39,7 @@ import {
 import useDebounce from "@/hooks/useDebounce";
 import type { Student } from "@/lib/types";
 import StudentViewDialog from "./StudentViewDialog";
-import StudentEditDialog from "./StudentEditDialog";
 import { useAuthStore } from "@/store/authStore";
-import { Download } from "lucide-react";
 
 const features = tableFeatures({
   rowPaginationFeature,
@@ -69,9 +67,7 @@ const StudentList = () => {
   const [searchInput, setSearchInput] = useState(search);
   const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Dialog state
   const [viewStudent, setViewStudent] = useState<Student | null>(null);
-  const [editStudent, setEditStudent] = useState<Student | null>(null);
 
   const deleteMutation = useDeleteStudent();
 
@@ -83,7 +79,10 @@ const StudentList = () => {
         const url = row.original.profile_image_url;
         if (!url)
           return (
-            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs text-muted-foreground">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-semibold text-white"
+              style={{ backgroundColor: "#2196f3" }}
+            >
               {row.original.student_name.charAt(0).toUpperCase()}
             </div>
           );
@@ -91,7 +90,7 @@ const StudentList = () => {
           <img
             src={url}
             alt={row.original.student_name}
-            className="w-8 h-8 rounded-full object-cover border border-border"
+            className="w-8 h-8 rounded-full object-cover border border-[#e2e7eb]"
           />
         );
       },
@@ -100,16 +99,18 @@ const StudentList = () => {
     columnHelper.accessor("student_name", {
       header: ({ column }) => (
         <Button
-          variant="ghost"
-          className="cursor-pointer"
           onClick={() => column.toggleSorting()}
+          variant="ghost"
+          className="h-auto w-full justify-start p-0 text-[10px] font-semibold text-[#243447] hover:bg-transparent hover:text-[#243447] cursor-pointer"
         >
-          NAME
-          {/* {column.getIsSorted() === "asc"
-            ? "↑"
-            : column.getIsSorted() === "desc"
-              ? "↓"
-              : "↕"} */}
+          NAME{" "}
+          <span className="ml-auto text-[10px] text-[#aeb7c2]">
+            {column.getIsSorted() === "asc"
+              ? "↑"
+              : column.getIsSorted() === "desc"
+                ? "↓"
+                : "↕"}
+          </span>
         </Button>
       ),
     }),
@@ -121,32 +122,42 @@ const StudentList = () => {
       cell: ({ row }) => {
         const student = row.original;
         return (
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 items-center">
             <Button
               type="button"
-              variant="outline"
               size="sm"
               onClick={() => setViewStudent(student)}
+              className="h-8 rounded-md px-4 text-[12px] cursor-pointer"
+              style={{ backgroundColor: "#6c757d", borderColor: "#6c757d" }}
             >
               View
             </Button>
+
             {isAdmin && (
               <Button
                 type="button"
                 size="sm"
-                onClick={() => setEditStudent(student)}
+                onClick={() => navigate(`/students/edit/${student.id}`)}
+                className="h-8 rounded-md px-4 text-[12px] text-primary-foreground cursor-pointer"
               >
                 Edit
               </Button>
             )}
+
             {isAdmin && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive" size="sm">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="default"
+                    className="h-8 rounded-md px-4 text-[12px] text-primary-foreground cursor-pointer"
+                  >
                     Delete
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+
+                <AlertDialogContent className="bg-[#f1f4f7] text-[#243447]">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
@@ -154,10 +165,15 @@ const StudentList = () => {
                       undone.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
+
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel className="border border-zinc-800 bg-transparent text-[#243447] hover:bg-zinc-300 hover:text-zinc-800 cursor-pointer">
+                      Cancel
+                    </AlertDialogCancel>
                     <Button
+                      type="button"
                       variant="destructive"
+                      className="rounded-md px-4 text-primary-foreground cursor-pointer"
                       onClick={() => deleteMutation.mutate(student.id)}
                     >
                       Delete
@@ -202,7 +218,7 @@ const StudentList = () => {
             type="button"
             onClick={handleDownload}
             title="Download profile image"
-            className="p-1.5 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            className="cursor-pointer text-[#53606c] hover:text-[#243447] transition-colors"
           >
             {/* Download SVG icon */}
             <svg
@@ -312,194 +328,241 @@ const StudentList = () => {
 
   if (error)
     return (
-      <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-6 text-sm text-destructive">
-        Failed to load students.
+      <div className="min-h-full bg-[#f1f4f7] p-4 md:p-5">
+        <div className="rounded-[3px] border border-red-200 bg-red-50 p-6 text-sm text-red-600">
+          Failed to load students. Please check your connection and try again.
+        </div>
       </div>
     );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage student records
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Export dropdown */}
-          <div className="relative">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExportMenuOpen((prev) => !prev)
-              }}
-              disabled={exportMutation.isPending}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              {exportMutation.isPending ? "Exporting..." : "Export"}
-            </Button>
+    <div className="min-h-full bg-[#f1f4f7] p-4 md:p-5">
+      {/* Table Card */}
+      <div className="overflow-hidden border border-[#e2e7eb] bg-white rounded-xs">
+        {/* Card Header */}
+        <div className="flex items-center justify-between border-b border-[#e5e9ed] px-4 py-3">
+          <h2 className="text-[14px] font-semibold text-[#243447]">
+            Student List
+          </h2>
 
-            {exportMenuOpen && (
-              <div 
-              className="absolute right-0 mt-1 w-44 bg-card border border-border rounded-lg shadow-lg z-10"
-              onClick={(e) => e.stopPropagation()}
+          <div className="flex items-center gap-2">
+            {/* Export dropdown */}
+            <div className="relative">
+              <Button
+                type="button"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExportMenuOpen((prev) => !prev);
+                }}
+                disabled={exportMutation.isPending}
+                className="h-8 px-4 text-[12px] cursor-pointer text-white font-medium"
+                style={{ backgroundColor: "#4caf50", borderColor: "#4caf50" }}
               >
-                {(["csv", "excel", "pdf"] as const).map((format) => (
-                  <button
-                    key={format}
-                    type="button"
-                    className="w-full text-left px-4 py-2.5 text-sm hover:bg-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
-                    onClick={() => {
-                      setExportMenuOpen(false);
-                      exportMutation.mutate(format);
-                    }}
-                  >
-                    {format === "csv" && "📄 Export as CSV"}
-                    {format === "excel" && "📊 Export as Excel"}
-                    {format === "pdf" && "📋 Export as PDF"}
-                  </button>
-                ))}
-              </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="mr-1"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                {exportMutation.isPending ? "Exporting..." : "Export"}
+              </Button>
+
+              {exportMenuOpen && (
+                <div
+                  className="absolute right-0 mt-1 w-44 bg-white border border-[#e2e7eb] rounded shadow-lg z-10"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {(["csv", "excel", "pdf"] as const).map((format) => (
+                    <button
+                      key={format}
+                      type="button"
+                      className="w-full text-left px-4 py-2.5 text-[12px] text-[#53606c] hover:bg-[#f1f4f7] transition-colors first:rounded-t last:rounded-b cursor-pointer"
+                      onClick={() => {
+                        setExportMenuOpen(false);
+                        exportMutation.mutate(format);
+                      }}
+                    >
+                      {format === "csv" && "📄 Export as CSV"}
+                      {format === "excel" && "📊 Export as Excel"}
+                      {format === "pdf" && "📋 Export as PDF"}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {isAdmin && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => navigate("/students/add")}
+                className="h-8 px-4 text-[12px] cursor-pointer text-white font-medium"
+                style={{ backgroundColor: "#2196f3", borderColor: "#2196f3" }}
+              >
+                + Add Student
+              </Button>
             )}
           </div>
-
-          {isAdmin && (
-            <Button type="button" onClick={() => navigate("/students/add")}>
-              + Add Student
-            </Button>
-          )}
         </div>
-      </div>
 
-      <div className="flex items-center gap-3 flex-wrap">
-        <Input
-          type="text"
-          placeholder="Search students..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="max-w-xs bg-secondary border-border"
-        />
-      </div>
+        {/* Table Controls */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2 text-[11px] text-[#68737e]">
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) =>
+                updateParams({ pageSize: e.target.value, page: "1" })
+              }
+              className="h-8 w-12 rounded-xs border border-[#d9e0e5] bg-white px-1 text-center text-[11px] text-[#53606c] outline-none focus:border-[#aebbc7]"
+            >
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+            <span>entries</span>
+          </div>
 
-      <div className="rounded-xl border border-border overflow-hidden">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((hg) => (
-              <TableRow
-                key={hg.id}
-                className="border-border bg-secondary/50 hover:bg-secondary/50"
-              >
-                {hg.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-[#68737e]">Search:</span>
+            <Input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="h-8 w-40 rounded-xs border-[#d5dde3] bg-[#f0f4f7] px-2 text-[11px] text-[#344454] shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="px-4 pb-0">
+          <div className="overflow-x-auto">
+            <Table className="w-full border-collapse">
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow
+                    key={headerGroup.id}
+                    className="border border-[#dce3e8] bg-[#edf2f5] hover:bg-[#edf2f5]"
+                  >
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className="h-8.5 border-r border-[#dce3e8] px-2 text-[11px] font-semibold uppercase text-[#243447] last:border-r-0"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
                 ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              Array.from({ length: pageSize }).map((_, i) => (
-                <TableRow key={i}>
-                  {columns.map((_, j) => (
-                    <TableCell key={j}>
-                      <Skeleton className="h-4 w-full bg-secondary" />
+              </TableHeader>
+
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: pageSize }).map((_, i) => (
+                    <TableRow
+                      key={i}
+                      className="h-8.5 border-b border-[#e1e7eb]"
+                    >
+                      {columns.map((_, j) => (
+                        <TableCell
+                          key={j}
+                          className="border-r border-[#edf0f2] px-2 py-1.5 last:border-r-0"
+                        >
+                          <Skeleton className="h-3 w-full bg-[#edf1f4]" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows.length === 0 ? (
+                  <TableRow className="border-b border-[#e1e7eb]">
+                    <TableCell
+                      colSpan={columns.length}
+                      className="py-10 text-center text-[12px] text-[#8a949e]"
+                    >
+                      No students found
                     </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center text-muted-foreground py-12"
-                >
-                  No students found
-                </TableCell>
-              </TableRow>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  className="border-border hover:bg-secondary/30"
-                >
-                  {row.getAllCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+                  </TableRow>
+                ) : (
+                  table.getRowModel().rows.map((row, index) => (
+                    <TableRow
+                      key={row.id}
+                      className={`h-8.5 border-b border-[#dfe6ea] transition-colors ${
+                        index % 2 === 0 ? "bg-[#f7fafc]" : "bg-white"
+                      } hover:bg-[#eef5f9]`}
+                    >
+                      {row.getAllCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454] last:border-r-0"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between border-t border-[#e5e9ed] px-4 py-3">
+          <div className="text-[12px] text-[#7b858f]">
+            Showing{" "}
+            <span className="font-medium text-[#465563]">
+              {table.getRowModel().rows.length}
+            </span>{" "}
+            entries
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => updateParams({ page: String(page - 1) })}
+              disabled={!table.getCanPreviousPage()}
+              className="h-8 rounded-xs border-[#5f656a] bg-white px-2.5 text-[10px] text-[#66737e] shadow-none hover:bg-[#f3f6f8] hover:text-[#66737e] cursor-pointer"
+            >
+              Previous
+            </Button>
+            <div className="flex h-7 min-w-7 items-center justify-center rounded-xs bg-[#337ab7] px-2 text-[9px] font-medium text-white">
+              {page}
+            </div>
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => updateParams({ page: String(page + 1) })}
+              disabled={!table.getCanNextPage()}
+              className="h-8 rounded-xs border-[#5f656a] bg-white px-2.5 text-[10px] text-[#66737e] shadow-none hover:bg-[#f3f6f8] hover:text-[#66737e] cursor-pointer"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Pagination controls — just like BookList page */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Rows per page</span>
-          <select
-            value={pageSize}
-            onChange={(e) =>
-              updateParams({ pageSize: e.target.value, page: "1" })
-            }
-            className="text-xs bg-secondary border border-border rounded-md px-2 py-1"
-          >
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => updateParams({ page: String(page - 1) })}
-            disabled={!table.getCanPreviousPage()}
-          >
-            ← Previous
-          </Button>
-          <span className="text-xs text-muted-foreground px-2">
-            Page <span className="font-medium">{page}</span> of{" "}
-            <span className="font-medium">{table.getPageCount()}</span>
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => updateParams({ page: String(page + 1) })}
-            disabled={!table.getCanNextPage()}
-          >
-            Next →
-          </Button>
-        </div>
-      </div>
-
-      {/* Dialogs */}
+      {/* Dialogs — unchanged */}
       {viewStudent && (
         <StudentViewDialog
           student={viewStudent}
           open={!!viewStudent}
           onClose={() => setViewStudent(null)}
-        />
-      )}
-      {editStudent && (
-        <StudentEditDialog
-          student={editStudent}
-          open={!!editStudent}
-          onClose={() => setEditStudent(null)}
         />
       )}
     </div>

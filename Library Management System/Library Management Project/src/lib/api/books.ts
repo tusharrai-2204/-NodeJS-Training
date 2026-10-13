@@ -46,3 +46,8 @@ export const deleteBook = async (id: number) => {
   const response = await apiInstance.delete(`/api/books/${id}`);
   return response.data;
 }
+
+export const getBookById = async (id: number) => {
+  const response = await apiInstance.get(`/api/books/${id}`);
+  return response.data;
+}

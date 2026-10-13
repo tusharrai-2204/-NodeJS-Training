@@ -8,7 +8,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -56,201 +55,260 @@ const StudentAddPage = () => {
   const onSubmit = (data: AddStudent) => {
     addMutation.mutate(
       { data, imageFile },
-      {
-        onSuccess: () => navigate("/students"),
-      },
+      { onSuccess: () => navigate("/students") },
     );
   };
 
+  // Shared input class — matches the mockup's grey bg inputs
+  const inputCls =
+    "h-9 rounded-xs border-[#d5dde3] bg-[#eff3f6] text-[12px] text-[#344454] placeholder:text-[#aab3bc] placeholder:text-[14px] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#2196f3]";
+  const selectCls =
+    "w-full h-9 rounded-xs border border-[#d5dde3] bg-[#eff3f6] text-[14px] text-[#344454] px-2 outline-none focus:border-[#2196f3] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
+  const labelCls = "w-[200px] shrink-0 pt-2 text-[14px] text-[#53606c]";
+
   return (
-    <div className="max-w-lg">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Add Student</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Register a new student
-        </p>
-      </div>
+    <div className="min-h-full bg-[#f1f4f7] p-4 md:p-5">
+      <div className="bg-white border border-[#e2e7eb] rounded-xs overflow-hidden">
+        {/* Card header */}
+        <div className="px-5 py-3 border-b border-[#e5e9ed]">
+          <h2 className="text-[14px] font-semibold text-[#243447]">
+            Add Student
+          </h2>
+        </div>
 
-      <div className="bg-card border border-border rounded-xl p-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="student_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Student Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="John Doe" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="roll_no"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Roll Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="CS-2024-001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="+91 9876543210" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Country */}
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <FormControl>
-                    <select
-                      className="w-full border border-border rounded-md px-3 py-2 text-sm bg-secondary"
-                      value={field.value}
-                      onChange={(e) => {
-                        const selected = allCountries.find(
-                          (c) => c.name === e.target.value,
-                        );
-                        field.onChange(e.target.value);
-                        setSelectedCountryCode(selected?.isoCode ?? "");
-                        setSelectedStateCode("");
-                        form.setValue("state", "");
-                        form.setValue("city", "");
-                      }}
-                    >
-                      <option value="">Select country</option>
-                      {allCountries.map((c) => (
-                        <option key={c.isoCode} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* State */}
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <select
-                      className="w-full border border-border rounded-md px-3 py-2 text-sm bg-secondary disabled:opacity-50"
-                      value={field.value}
-                      disabled={!selectedCountryCode}
-                      onChange={(e) => {
-                        const selected = states.find(
-                          (s) => s.name === e.target.value,
-                        );
-                        field.onChange(e.target.value);
-                        setSelectedStateCode(selected?.isoCode ?? "");
-                        form.setValue("city", "");
-                      }}
-                    >
-                      <option value="">Select state</option>
-                      {states.map((s) => (
-                        <option key={s.isoCode} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* City */}
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <select
-                      className="w-full border border-border rounded-md px-3 py-2 text-sm bg-secondary disabled:opacity-50"
-                      value={field.value}
-                      disabled={!selectedStateCode}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    >
-                      <option value="">Select city</option>
-                      {cities.map((c, i) => (
-                        <option key={i} value={c.name}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Profile Image{" "}
-                <span className="text-muted-foreground font-normal">
-                  (optional)
-                </span>
-              </label>
-              {imagePreview && (
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="w-20 h-20 rounded-full object-cover border border-border"
-                />
-              )}
-              <Input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handleImageChange}
-                className="cursor-pointer"
+        {/* Form */}
+        <div className="px-5 py-5">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              {/* Student Name */}
+              <FormField
+                control={form.control}
+                name="student_name"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>Student Name</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <Input
+                            placeholder="Student Name"
+                            className={inputCls}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
               />
-              <p className="text-xs text-muted-foreground">
-                JPEG or PNG, max 2MB
-              </p>
-            </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={addMutation.isPending}>
-                {addMutation.isPending ? "Saving..." : "Save Student"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/students")}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </Form>
+              {/* Roll No */}
+              <FormField
+                control={form.control}
+                name="roll_no"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>Roll No.</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <Input
+                            placeholder="Roll No"
+                            className={inputCls}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Phone No */}
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>Phone No.</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <Input
+                            placeholder="Phone No"
+                            className={inputCls}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Student Photo */}
+              <div className="mb-4 flex items-start">
+                <label className={labelCls}>Student Photo</label>
+                <div className="flex-1 max-w-125 space-y-2">
+                  {/* <Input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={handleImageChange}
+                    className="h-9 rounded-xs border-[#d5dde3] bg-[#eff3f6] text-[12px] cursor-pointer"
+                  /> */}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    onChange={handleImageChange}
+                    className="h-9 w-full rounded-xs border border-[#d5dde3] bg-[#eff3f6] text-[12px] text-[#344454] cursor-pointer file:mr-3 file:h-full file:border-0 file:border-r file:border-[#d5dde3] file:bg-white file:px-3 file:text-[11px] file:text-[#53606c] file:font-medium file:cursor-pointer"
+                  />
+
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-16 h-16 rounded-full object-cover border border-[#e2e7eb]"
+                    />
+                  )}
+                  <p className="text-[11px] text-[#9aa3ad]">
+                    JPEG or PNG, max 2MB
+                  </p>
+                </div>
+              </div>
+
+              {/* Country */}
+              <FormField
+                control={form.control}
+                name="country"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>Country</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <select
+                            className={selectCls}
+                            value={field.value}
+                            onChange={(e) => {
+                              const selected = allCountries.find(
+                                (c) => c.name === e.target.value,
+                              );
+                              field.onChange(e.target.value);
+                              setSelectedCountryCode(selected?.isoCode ?? "");
+                              setSelectedStateCode("");
+                              form.setValue("state", "");
+                              form.setValue("city", "");
+                            }}
+                          >
+                            <option value="">Select Country</option>
+                            {allCountries.map((c) => (
+                              <option key={c.isoCode} value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* State */}
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>State</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <select
+                            className={selectCls}
+                            value={field.value}
+                            disabled={!selectedCountryCode}
+                            onChange={(e) => {
+                              const selected = states.find(
+                                (s) => s.name === e.target.value,
+                              );
+                              field.onChange(e.target.value);
+                              setSelectedStateCode(selected?.isoCode ?? "");
+                              form.setValue("city", "");
+                            }}
+                          >
+                            <option value="">Select State</option>
+                            {states.map((s) => (
+                              <option key={s.isoCode} value={s.name}>
+                                {s.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* City */}
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <div className="flex items-start">
+                      <label className={labelCls}>City</label>
+                      <div className="flex-1 max-w-125">
+                        <FormControl>
+                          <select
+                            className={selectCls}
+                            value={field.value}
+                            disabled={!selectedStateCode}
+                            onChange={(e) => field.onChange(e.target.value)}
+                          >
+                            <option value="">Select City</option>
+                            {cities.map((c, i) => (
+                              <option key={i} value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
+                        </FormControl>
+                        <FormMessage className="text-xs mt-1" />
+                      </div>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Buttons — right aligned */}
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-[#e5e9ed]">
+                <Button
+                  type="submit"
+                  disabled={addMutation.isPending}
+                  className="h-8 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
+                  style={{ backgroundColor: "#2196f3", borderColor: "#2196f3" }}
+                >
+                  {addMutation.isPending ? "Saving..." : "Save"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => navigate("/students")}
+                  className="h-8 px-5 text-[12px] font-medium rounded-xs cursor-pointer text-white"
+                  style={{ backgroundColor: "#f44336", borderColor: "#f44336" }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </div>
     </div>
   );
