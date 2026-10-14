@@ -65,29 +65,35 @@ export const loginUser = async (loginInput: LoginInput) => {
 export const googleAuthUser = async (input: GoogleAuthInput) => {
     const existingUser = await userRepo.findUserByEmail(input.email);
 
-    if (existingUser) {
-        if (existingUser.auth_provider === 'local') {
-            throw new ConflictError('This email is already registed. Please log in with your password');
-        }
+    if (!existingUser) {
+        // if (existingUser.auth_provider === 'local') {
+        //     throw new ConflictError('This email is already registed. Please log in with your password');
+        // }
 
-        return existingUser;
+        // return existingUser;
+        throw new UnauthorizedError('No admin account found for this Google email. Please contact your administrator.');
     }
 
-    const userId = await userRepo.createUser({
-        first_name: input.first_name,
-        middle_name: null,
-        last_name: input.last_name,
-        email: input.email,
-        auth_provider: 'google',
-        provider_user_id: input.googleId,
-        password: null,
-        role: 'user',
-        student_id: null,
-        password_changed: true
-    });
+    if (existingUser.role === 'student') {
+        throw new UnauthorizedError('Students cannot log in with Google. Please use your roll number and password.');
+    }
 
-    const newUser = await userRepo.findUserById(userId);
-    return newUser!;
+    // const userId = await userRepo.createUser({
+    //     first_name: input.first_name,
+    //     middle_name: null,
+    //     last_name: input.last_name,
+    //     email: input.email,
+    //     auth_provider: 'google',
+    //     provider_user_id: input.googleId,
+    //     password: null,
+    //     role: 'user',
+    //     student_id: null,
+    //     password_changed: true
+    // });
+
+    // const newUser = await userRepo.findUserById(userId);
+    // return newUser!;
+    return existingUser;
 }
 
 export const studentLoginUser = async (input: StudentLoginInput) => {

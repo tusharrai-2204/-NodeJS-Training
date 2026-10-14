@@ -264,7 +264,7 @@ const IssueListPage = () => {
         {error ? (
           <div className="px-4 pb-4">
             <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-600">
-              Failed to load issues.
+              Failed to load issued books.
             </div>
           </div>
         ) : (
@@ -276,10 +276,10 @@ const IssueListPage = () => {
                     {[
                       "ID",
                       "BOOK NAME",
-                      "STUDENT NAME",
+                      ...(isAdmin ? "STUDENT NAME" : []),
                       "ISSUE DATE",
                       "RETURN DATE",
-                      "RETURN OPTION",
+                      ...(isAdmin ? "RETURN OPTION" : []),
                     ].map((col) => (
                       <TableHead
                         key={col}
@@ -297,7 +297,7 @@ const IssueListPage = () => {
                         key={i}
                         className="h-8.5 border-b border-[#e1e7eb]"
                       >
-                        {Array.from({ length: 6 }).map((_, j) => (
+                        {Array.from({ length: isAdmin ? 6 : 4 }).map((_, j) => (
                           <TableCell
                             key={j}
                             className="border-r border-[#edf0f2] px-2 py-1.5 last:border-r-0"
@@ -310,7 +310,7 @@ const IssueListPage = () => {
                   ) : (filteredData?.length ?? 0) === 0 ? (
                     <TableRow className="border-b border-[#e1e7eb]">
                       <TableCell
-                        colSpan={6}
+                        colSpan={isAdmin ? 6 : 4}
                         className="py-10 text-center text-[12px] text-[#8a949e]"
                       >
                         No issues found
@@ -330,17 +330,17 @@ const IssueListPage = () => {
                         <TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
                           {issue.book_title}
                         </TableCell>
-                        <TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
+                        {isAdmin && (<TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
                           {issue.student_name}
-                        </TableCell>
+                        </TableCell>)}
                         <TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
                           {new Date(issue.issued_at).toLocaleString()}
                         </TableCell>
-                        <TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
+                        {isAdmin &&(<TableCell className="border-r border-[#e7ecef] px-2 py-1.5 text-[12px] text-[#344454]">
                           {issue.return_date
                             ? new Date(issue.return_date).toLocaleString()
                             : "—"}
-                        </TableCell>
+                        </TableCell>)}
                         <TableCell className="px-2 py-1.5 text-[12px] text-[#344454]">
                           {/* Return option — admin only, only for issued books */}
                           {isAdmin && issue.status === "issued" && (
