@@ -276,10 +276,10 @@ const IssueListPage = () => {
                     {[
                       "ID",
                       "BOOK NAME",
-                      ...(isAdmin ? "STUDENT NAME" : []),
+                      ...(isAdmin ? ["STUDENT NAME"] : []),
                       "ISSUE DATE",
                       "RETURN DATE",
-                      ...(isAdmin ? "RETURN OPTION" : []),
+                      ...(isAdmin ? ["RETURN OPTION"] : []),
                     ].map((col) => (
                       <TableHead
                         key={col}
