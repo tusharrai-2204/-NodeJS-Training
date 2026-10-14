@@ -64,8 +64,7 @@ const LoginPage = () => {
       await studentLoginUser(data);
       const meResponse = await getMe();
       const requiresPasswordChange =
-        !meResponse.data.password_changed &&
-        meResponse.data.role === "student";
+        !meResponse.data.password_changed && meResponse.data.role === "student";
       login({
         id: meResponse.data.id,
         email: meResponse.data.email,
@@ -360,7 +359,7 @@ const LoginPage = () => {
                           style={{ backgroundColor: "#eff3f6" }}
                         >
                           <div className="px-3 text-[#888] shrink-0">
-                            {/* Phone icon */}
+                            {/* Password icon */}
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="15"
@@ -372,18 +371,27 @@ const LoginPage = () => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                             >
-                              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                              <rect
+                                x="3"
+                                y="11"
+                                width="18"
+                                height="11"
+                                rx="2"
+                                ry="2"
+                              />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
                           </div>
                           <Input
-                            type="text"
-                            placeholder="Enter your phone number or password"
+                            type="password"
+                            placeholder="Enter your password"
                             className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 shadow-none h-full text-[#111] placeholder:text-[#aaa] text-[13px]"
                             {...field}
                           />
                         </div>
                       </FormControl>
                       <FormMessage className="text-xs" />
+                      <p className="text-[12px] text-[#686c71]">For first login, use phone no. as password</p>
                     </FormItem>
                   )}
                 />
